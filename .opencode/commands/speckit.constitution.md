@@ -1,9 +1,11 @@
 ---
+
 description: Create or update the project constitution from interactive or provided principle inputs.
 handoffs:
-  - label: Build Specification
-    agent: speckit.specify
-    prompt: Implement the feature specification based on the updated constitution. I want to build...
+- label: Build Specification
+  agent: speckit.specify
+  prompt: Implement the feature specification based on the updated constitution. I want to build...
+
 ---
 
 ## User Input
@@ -18,7 +20,6 @@ You **MUST** consider the user input before proceeding (if not empty).
 
 This command's own work is limited to updating the project constitution itself. Dependent templates
 and commands read the constitution at runtime and are not modified here.
-
 - Classify every part of the user input as either constitution content or a separate,
   non-governance intent.
 - If the input includes feature implementation, code generation, refactoring, building, or
@@ -45,6 +46,7 @@ and commands read the constitution at runtime and are not modified here.
   - If the hook defines a non-empty `condition`, skip the hook and leave condition evaluation to the HookExecutor implementation
 - For each executable hook, output the following based on its `optional` flag:
   - **Optional hook** (`optional: true`):
+
     ```
     ## Extension Hooks
 
@@ -56,6 +58,7 @@ and commands read the constitution at runtime and are not modified here.
     To execute: `/{command}`
     ```
   - **Mandatory hook** (`optional: false`):
+
     ```
     ## Extension Hooks
 
@@ -65,6 +68,7 @@ and commands read the constitution at runtime and are not modified here.
 
     Wait for the result of the hook command before proceeding to the Outline.
     ```
+
     After emitting the block above you MUST actually invoke the hook and wait for it to finish before continuing. Run it the same way you would run the command yourself in this agent/session (the invocation may differ from the literal `{command}` id shown above, e.g. a skills-mode agent runs it as `/skill:speckit-...` or `$speckit-...`). Emitting the block alone does not run the hook.
 - If no hooks are registered or `.specify/extensions.yml` does not exist, skip silently
 
@@ -75,7 +79,6 @@ constitution scaffold is resolved at command time from `constitution-template` t
 preset/template resolution stack.
 
 Follow this execution flow:
-
 1. Run `.specify/scripts/bash/resolve-template.sh constitution-template --json` from the repository root and parse `TEMPLATE_CONTENT` as the active template.
    - The shared resolver applies project overrides, composing preset layers, and extension layers
      before the core template fallback. It MUST succeed before continuing.
@@ -87,7 +90,7 @@ Follow this execution flow:
    - If it does not exist, use the resolved template as the initial document.
    - Do not write back to any versioned template layer.
    - Identify every placeholder token of the form `[ALL_CAPS_IDENTIFIER]`.
-   **IMPORTANT**: The user might require less or more principles than the ones used in the template. If a number is specified, respect that - follow the general template. You will update the doc accordingly.
+     **IMPORTANT**: The user might require less or more principles than the ones used in the template. If a number is specified, respect that - follow the general template. You will update the doc accordingly.
 
 2. Collect/derive values for placeholders:
    - If user input (conversation) supplies a value, use it.
@@ -129,7 +132,6 @@ Follow this execution flow:
    - A `Next Actions` section for any deferred non-governance intents.
 
 Formatting & Style Requirements:
-
 - Use Markdown headings exactly as in the template (do not demote/promote levels).
 - Wrap long rationale lines to keep readability (<100 chars ideally) but do not hard enforce with awkward breaks.
 - Keep a single blank line between sections.
@@ -153,6 +155,7 @@ Check if `.specify/extensions.yml` exists in the project root.
   - If the hook defines a non-empty `condition`, skip the hook and leave condition evaluation to the HookExecutor implementation
 - For each executable hook, output the following based on its `optional` flag:
   - **Optional hook** (`optional: true`):
+
     ```
     ## Extension Hooks
 
@@ -164,6 +167,7 @@ Check if `.specify/extensions.yml` exists in the project root.
     To execute: `/{command}`
     ```
   - **Mandatory hook** (`optional: false`):
+
     ```
     ## Extension Hooks
 
@@ -171,5 +175,6 @@ Check if `.specify/extensions.yml` exists in the project root.
     Executing: `/{command}`
     EXECUTE_COMMAND: {command}
     ```
+
     After emitting the block above you MUST actually invoke the hook and wait for it to finish before continuing. Run it the same way you would run the command yourself in this agent/session (the invocation may differ from the literal `{command}` id shown above, e.g. a skills-mode agent runs it as `/skill:speckit-...` or `$speckit-...`). Emitting the block alone does not run the hook.
 - If no hooks are registered or `.specify/extensions.yml` does not exist, skip silently

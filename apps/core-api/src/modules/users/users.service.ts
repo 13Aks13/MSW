@@ -1,9 +1,9 @@
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import bcrypt from 'bcryptjs';
-import { UserEntity } from './entities/user.entity.js';
+import { Injectable, Logger, type OnModuleInit } from "@nestjs/common";
+import type { ConfigService } from "@nestjs/config";
+import { InjectRepository } from "@nestjs/typeorm";
+import bcrypt from "bcryptjs";
+import type { Repository } from "typeorm";
+import { UserEntity } from "./entities/user.entity.js";
 
 const BCRYPT_ROUNDS = 12;
 
@@ -21,12 +21,12 @@ export class UsersService implements OnModuleInit {
     const count = await this.users.count();
     if (count > 0) return;
 
-    const email = this.config.get<string>('ADMIN_EMAIL', 'admin@example.com').toLowerCase();
-    const password = this.config.get<string>('ADMIN_PASSWORD', 'ChangeMe123!');
+    const email = this.config.get<string>("ADMIN_EMAIL", "admin@example.com").toLowerCase();
+    const password = this.config.get<string>("ADMIN_PASSWORD", "ChangeMe123!");
     const user = this.users.create({
       email,
       passwordHash: await bcrypt.hash(password, BCRYPT_ROUNDS),
-      role: 'admin',
+      role: "admin",
       isActive: true,
     });
     await this.users.save(user);
@@ -37,9 +37,9 @@ export class UsersService implements OnModuleInit {
 
   findByEmailWithPassword(email: string): Promise<UserEntity | null> {
     return this.users
-      .createQueryBuilder('user')
-      .addSelect('user.passwordHash')
-      .where('lower(user.email) = lower(:email)', { email })
+      .createQueryBuilder("user")
+      .addSelect("user.passwordHash")
+      .where("lower(user.email) = lower(:email)", { email })
       .getOne();
   }
 

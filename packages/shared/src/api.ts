@@ -1,10 +1,4 @@
-import type {
-  BackupStatus,
-  DuplicatePolicy,
-  PackType,
-  UserRole,
-  WorldStatus,
-} from './domain.js';
+import type { BackupStatus, DuplicatePolicy, PackType, UserRole, WorldStatus } from "./domain.js";
 
 export interface ApiErrorBody {
   statusCode: number;
@@ -51,7 +45,7 @@ export interface PackDto {
 }
 
 export interface ImportIssue {
-  level: 'warning' | 'error';
+  level: "warning" | "error";
   message: string;
   pack?: string;
 }
@@ -79,8 +73,8 @@ export interface WorldPackDto {
 export interface CreateWorldDto {
   name: string;
   seed?: string;
-  gamemode?: 'survival' | 'creative' | 'adventure';
-  difficulty?: 'peaceful' | 'easy' | 'normal' | 'hard';
+  gamemode?: "survival" | "creative" | "adventure";
+  difficulty?: "peaceful" | "easy" | "normal" | "hard";
   resourcePackIds?: string[];
   behaviorPackIds?: string[];
 }
@@ -114,7 +108,7 @@ export interface BackupDto {
 export interface ServerStatusDto {
   containerName: string;
   exists: boolean;
-  state: 'running' | 'stopped' | 'paused' | 'restarting' | 'unknown';
+  state: "running" | "stopped" | "paused" | "restarting" | "unknown";
   image: string | null;
   startedAt: string | null;
   uptimeSeconds: number;
@@ -155,7 +149,7 @@ export interface LoginResponseDto {
 }
 
 export interface LogLineDto {
-  stream: 'stdout' | 'stderr' | 'system';
+  stream: "stdout" | "stderr" | "system";
   message: string;
   timestamp: string;
 }
@@ -164,17 +158,17 @@ export interface ServerPropertyDto {
   key: string;
   label: string;
   value: string;
-  type: 'string' | 'number' | 'boolean' | 'enum';
+  type: "string" | "number" | "boolean" | "enum";
   options?: string[];
   restartRequired?: boolean;
   readOnly?: boolean;
 }
 
 export interface HealthDto {
-  status: 'ok' | 'degraded';
+  status: "ok" | "degraded";
   checks: Array<{
     name: string;
-    status: 'up' | 'down';
+    status: "up" | "down";
     message?: string;
     latencyMs?: number;
   }>;

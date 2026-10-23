@@ -1,8 +1,18 @@
 // Biome configuration for Minecraft Bedrock Management Platform
 {
-  "$schema": "https://biomejs.dev/schemas/2.1.2/schema.json",
-  "organizeImports": {
-    "enabled": true
+  "$schema": "https://biomejs.dev/schemas/2.6.2/schema.json",
+  "vcs": {
+    "enabled": true,
+    "clientKind": "git",
+    "useIgnoreFile": true
+  },
+  "formatter": {
+    "enabled": true,
+    "formatWithErrors": true,
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineWidth": 100,
+    "attributePosition": "auto"
   },
   "linter": {
     "enabled": true,
@@ -13,23 +23,14 @@
       },
       "style": {
         "noParameterAssign": "warn",
-        "useBlockStatements": "warn",
-        "useShorthandArrayType": "warn"
-      },
-      "nursery": {
-        "noUnusedVariables": "warn"
+        "useBlockStatements": "warn"
       }
     }
   },
-  "formatter": {
-    "enabled": true,
-    "indentStyle": "space",
-    "indentWidth": 2,
-    "lineWidth": 100,
-    "attributePosition": "auto",
-    "ignore": []
-  },
   "javascript": {
+    "parser": {
+      "unsafeParameterDecoratorsEnabled": true
+    },
     "formatter": {
       "semicolons": "always",
       "quoteStyle": "double",
@@ -41,34 +42,5 @@
     "formatter": {
       "trailingCommas": "none"
     }
-  },
-  "vcs": {
-    "enabled": true,
-    "clientKind": "git",
-    "useIgnoreFile": true
-  },
-  "files": {
-    "ignore": [
-      "node_modules",
-      ".pnpm-store",
-      "dist",
-      "build",
-      "coverage",
-      "*.tsbuildinfo",
-      ".env",
-      ".env.*",
-      "data",
-      "storage",
-      ".DS_Store",
-      ".idea",
-      ".vscode",
-      "test-results",
-      "playwright-report",
-      ".git",
-      "pnpm-lock.yaml",
-      "package.json",
-      "package-lock.json",
-      "yarn.lock"
-    ]
   }
 }

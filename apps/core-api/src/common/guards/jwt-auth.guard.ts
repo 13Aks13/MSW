@@ -3,12 +3,12 @@ import {
   type ExecutionContext,
   Injectable,
   UnauthorizedException,
-} from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
-import { Reflector } from '@nestjs/core';
-import type { Request } from 'express';
-import { IS_PUBLIC_KEY } from '../decorators/public.decorator.js';
-import type { AuthUser, JwtPayload } from '../../modules/auth/auth.types.js';
+} from "@nestjs/common";
+import type { Reflector } from "@nestjs/core";
+import type { JwtService } from "@nestjs/jwt";
+import type { Request } from "express";
+import type { AuthUser, JwtPayload } from "../../modules/auth/auth.types.js";
+import { IS_PUBLIC_KEY } from "../decorators/public.decorator.js";
 
 @Injectable()
 export class JwtAuthGuard implements CanActivate {
@@ -26,11 +26,11 @@ export class JwtAuthGuard implements CanActivate {
 
     const request = context.switchToHttp().getRequest<Request & { user?: AuthUser }>();
     const authorization = request.headers.authorization;
-    if (!authorization?.startsWith('Bearer ')) {
-      throw new UnauthorizedException('Missing bearer token');
+    if (!authorization?.startsWith("Bearer ")) {
+      throw new UnauthorizedException("Missing bearer token");
     }
 
-    const token = authorization.slice('Bearer '.length).trim();
+    const token = authorization.slice("Bearer ".length).trim();
     try {
       const payload = await this.jwtService.verifyAsync<JwtPayload>(token);
       request.user = {
@@ -40,7 +40,7 @@ export class JwtAuthGuard implements CanActivate {
       };
       return true;
     } catch {
-      throw new UnauthorizedException('Invalid or expired token');
+      throw new UnauthorizedException("Invalid or expired token");
     }
   }
 }

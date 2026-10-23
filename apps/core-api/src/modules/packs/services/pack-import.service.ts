@@ -1,15 +1,6 @@
-import {
-  BadRequestException,
-  ConflictException,
-  Injectable,
-  Logger,
-  NotFoundException,
-} from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository } from 'typeorm';
-import { copyFile, cp, mkdir, readdir, rename, rm } from 'node:fs/promises';
-import { randomUUID } from 'node:crypto';
-import path from 'node:path';
+import { randomUUID } from "node:crypto";
+import { copyFile, cp, mkdir, readdir, rename, rm } from "node:fs/promises";
+import path from "node:path";
 import {
   type DuplicatePolicy,
   type ImportIssue,
@@ -17,13 +8,22 @@ import {
   type PackDto,
   type PackType,
   slugify,
-} from '@mc/shared';
-import { PacksService } from '../packs.service.js';
-import { PackEntity } from '../entities/pack.entity.js';
-import { ManifestService } from './manifest.service.js';
-import { ZipExtractorService } from './zip-extractor.service.js';
-import { StorageService } from '../../../common/storage/storage.service.js';
-import { dirSize } from '../../../common/utils/fs.utils.js';
+} from "@mc/shared";
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+import { In, type Repository } from "typeorm";
+import type { StorageService } from "../../../common/storage/storage.service.js";
+import { dirSize } from "../../../common/utils/fs.utils.js";
+import { PackEntity } from "../entities/pack.entity.js";
+import type { PacksService } from "../packs.service.js";
+import type { ManifestService } from "./manifest.service.js";
+import type { ZipExtractorService } from "./zip-extractor.service.js";
 
 @Injectable()
 export class PackImportService {
@@ -41,13 +41,13 @@ export class PackImportService {
   async importBundle(
     file: Express.Multer.File | undefined,
     type: PackType,
-    policy: DuplicatePolicy = 'replace',
+    policy: DuplicatePolicy = "replace",
   ): Promise<ImportReport> {
     if (!file) throw new BadRequestException('ZIP file is required in the "file" field');
 
     const startedAt = Date.now();
     const workDir = path.join(this.storage.tempDir(), `import-${randomUUID()}`);
-    const extractedDir = path.join(workDir, 'extracted');
+    const extractedDir = path.join(workDir, "extracted");
     const warnings: ImportIssue[] = [];
     const errors: ImportIssue[] = [];
     const imported: PackDto[] = [];
@@ -61,7 +61,7 @@ export class PackImportService {
       const manifestPaths = await this.manifests.findManifests(extractedDir);
       if (manifestPaths.length === 0) {
         throw new BadRequestException(
-          'No manifest.json found inside the ZIP archive. Expected pack folders with manifest.json.',
+          "No manifest.json found inside the ZIP archive. Expected pack folders with manifest.json.",
         );
       }
 
@@ -69,15 +69,15 @@ export class PackImportService {
         const parsed = await this.manifests.parse(manifestPath, type);
         if (!parsed.type) {
           warnings.push({
-            level: 'warning',
+            level: "warning",
             pack: parsed.name,
             message:
-              'No modules[] declared in manifest.json; pack type was taken from the endpoint.',
+              "No modules[] declared in manifest.json; pack type was taken from the endpoint.",
           });
         }
 
         const existing = await this.packs.findOneBy({ packUuid: parsed.uuid });
-        if (existing && policy === 'skip') {
+        if (existing && policy === "skip") {
           skipped.push(parsed.name);
           continue;
         }
@@ -92,7 +92,7 @@ export class PackImportService {
           const icon = await this.findIcon(stagingDir);
           const iconPath = icon
             ? await this.installIcon(icon, folderName)
-            : existing?.iconPath ?? null;
+            : (existing?.iconPath ?? null);
 
           await rm(finalDir, { recursive: true, force: true });
           await rename(stagingDir, finalDir);
@@ -118,7 +118,7 @@ export class PackImportService {
         } catch (error) {
           await rm(stagingDir, { recursive: true, force: true });
           errors.push({
-            level: 'error',
+            level: "error",
             pack: parsed.name,
             message: (error as Error).message,
           });
@@ -169,7 +169,7 @@ export class PackImportService {
 
   private async findIcon(dir: string): Promise<string | null> {
     const entries = await readdir(dir, { withFileTypes: true });
-    const candidates = ['pack_icon.png', 'pack_icon.jpg', 'pack_icon.jpeg', 'pack_icon.gif'];
+    const candidates = ["pack_icon.png", "pack_icon.jpg", "pack_icon.jpeg", "pack_icon.gif"];
     for (const candidate of candidates) {
       const match = entries.find(
         (entry) => entry.isFile() && entry.name.toLowerCase() === candidate,
@@ -185,7 +185,7 @@ export class PackImportService {
     const target = path.join(this.storage.iconsDir(), fileName);
     await copyFile(source, target);
     await this.removeOtherIcons(folderName, fileName);
-    return path.relative(this.storage.root, target).split(path.sep).join('/');
+    return path.relative(this.storage.root, target).split(path.sep).join("/");
   }
 
   private async removeOtherIcons(folderName: string, keep: string): Promise<void> {
@@ -197,10 +197,7 @@ export class PackImportService {
     );
   }
 
-  private async attachDependencyStatus(
-    packs: PackDto[],
-    warnings: ImportIssue[],
-  ): Promise<void> {
+  private async attachDependencyStatus(packs: PackDto[], warnings: ImportIssue[]): Promise<void> {
     const uuids = [...new Set(packs.flatMap((pack) => pack.dependencies.map((dep) => dep.uuid)))];
     if (uuids.length === 0) return;
 
@@ -215,9 +212,9 @@ export class PackImportService {
         const resolvedPackId = byUuid.get(dependency.uuid) ?? null;
         if (!resolvedPackId) {
           warnings.push({
-            level: 'warning',
+            level: "warning",
             pack: pack.name,
-            message: `Missing dependency ${dependency.uuid}${dependency.version ? ` @ ${dependency.version.join('.')}` : ''}`,
+            message: `Missing dependency ${dependency.uuid}${dependency.version ? ` @ ${dependency.version.join(".")}` : ""}`,
           });
         }
         return { ...dependency, missing: !resolvedPackId, resolvedPackId };

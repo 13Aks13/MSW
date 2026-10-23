@@ -1,14 +1,16 @@
 ---
+
 description: Generate an actionable, dependency-ordered tasks.md for the feature based on available design artifacts.
 handoffs:
-  - label: Analyze For Consistency
-    agent: speckit.analyze
-    prompt: Run a project analysis for consistency
-    send: true
-  - label: Implement Project
-    agent: speckit.implement
-    prompt: Start the implementation in phases
-    send: true
+- label: Analyze For Consistency
+  agent: speckit.analyze
+  prompt: Run a project analysis for consistency
+  send: true
+- label: Implement Project
+  agent: speckit.implement
+  prompt: Start the implementation in phases
+  send: true
+
 ---
 
 ## User Input
@@ -31,6 +33,7 @@ You **MUST** consider the user input before proceeding (if not empty).
   - If the hook defines a non-empty `condition`, skip the hook and leave condition evaluation to the HookExecutor implementation
 - For each executable hook, output the following based on its `optional` flag:
   - **Optional hook** (`optional: true`):
+
     ```
     ## Extension Hooks
 
@@ -42,6 +45,7 @@ You **MUST** consider the user input before proceeding (if not empty).
     To execute: `/{command}`
     ```
   - **Mandatory hook** (`optional: false`):
+
     ```
     ## Extension Hooks
 
@@ -51,6 +55,7 @@ You **MUST** consider the user input before proceeding (if not empty).
 
     Wait for the result of the hook command before proceeding to the Outline.
     ```
+
     After emitting the block above you MUST actually invoke the hook and wait for it to finish before continuing. Run it the same way you would run the command yourself in this agent/session (the invocation may differ from the literal `{command}` id shown above, e.g. a skills-mode agent runs it as `/skill:speckit-...` or `$speckit-...`). Emitting the block alone does not run the hook.
 - If no hooks are registered or `.specify/extensions.yml` does not exist, skip silently
 
@@ -102,6 +107,7 @@ Check if `.specify/extensions.yml` exists in the project root.
   - If the hook defines a non-empty `condition`, skip the hook and leave condition evaluation to the HookExecutor implementation
 - For each executable hook, output the following based on its `optional` flag:
   - **Mandatory hook** (`optional: false`) — **You MUST emit `EXECUTE_COMMAND:` for each mandatory hook**:
+
     ```
     ## Extension Hooks
 
@@ -109,8 +115,10 @@ Check if `.specify/extensions.yml` exists in the project root.
     Executing: `/{command}`
     EXECUTE_COMMAND: {command}
     ```
+
     After emitting the block above you MUST actually invoke the hook and wait for it to finish before continuing. Run it the same way you would run the command yourself in this agent/session (the invocation may differ from the literal `{command}` id shown above, e.g. a skills-mode agent runs it as `/skill:speckit-...` or `$speckit-...`). Emitting the block alone does not run the hook.
   - **Optional hook** (`optional: true`):
+
     ```
     ## Extension Hooks
 
@@ -151,7 +159,6 @@ Every task MUST strictly follow this format:
 ```
 
 **Format Components**:
-
 1. **Checkbox**: ALWAYS start with `- [ ]` (markdown checkbox)
 2. **Task ID**: Sequential number (T001, T002, T003...) in execution order
 3. **[P] marker**: Include ONLY if task is parallelizable (different files, no dependencies on incomplete tasks)
@@ -164,7 +171,6 @@ Every task MUST strictly follow this format:
 5. **Description**: Clear action with exact file path
 
 **Examples**:
-
 - ✅ CORRECT: `- [ ] T001 Create project structure per implementation plan`
 - ✅ CORRECT: `- [ ] T005 [P] Implement authentication middleware in src/middleware/auth.py`
 - ✅ CORRECT: `- [ ] T012 [P] [US1] Create User model in src/models/user.py`

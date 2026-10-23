@@ -1,6 +1,6 @@
 ---
-description: Perform a non-destructive cross-artifact consistency and quality analysis across spec.md, plan.md, and tasks.md after task generation.
----
+
+## description: Perform a non-destructive cross-artifact consistency and quality analysis across spec.md, plan.md, and tasks.md after task generation.
 
 ## User Input
 
@@ -22,6 +22,7 @@ You **MUST** consider the user input before proceeding (if not empty).
   - If the hook defines a non-empty `condition`, skip the hook and leave condition evaluation to the HookExecutor implementation
 - For each executable hook, output the following based on its `optional` flag:
   - **Optional hook** (`optional: true`):
+
     ```
     ## Extension Hooks
 
@@ -33,6 +34,7 @@ You **MUST** consider the user input before proceeding (if not empty).
     To execute: `/{command}`
     ```
   - **Mandatory hook** (`optional: false`):
+
     ```
     ## Extension Hooks
 
@@ -42,6 +44,7 @@ You **MUST** consider the user input before proceeding (if not empty).
 
     Wait for the result of the hook command before proceeding to the Goal.
     ```
+
     After emitting the block above you MUST actually invoke the hook and wait for it to finish before continuing. Run it the same way you would run the command yourself in this agent/session (the invocation may differ from the literal `{command}` id shown above, e.g. a skills-mode agent runs it as `/skill:speckit-...` or `$speckit-...`). Emitting the block alone does not run the hook.
 - If no hooks are registered or `.specify/extensions.yml` does not exist, skip silently
 
@@ -60,7 +63,6 @@ Identify inconsistencies, duplications, ambiguities, and underspecified items ac
 ### 1. Initialize Analysis Context
 
 Run `.specify/scripts/bash/check-prerequisites.sh --json --require-spec --require-tasks --include-tasks` once from repo root and parse JSON for FEATURE_DIR and AVAILABLE_DOCS. Derive absolute paths:
-
 - SPEC = FEATURE_DIR/spec.md
 - PLAN = FEATURE_DIR/plan.md
 - TASKS = FEATURE_DIR/tasks.md
@@ -73,7 +75,6 @@ For single quotes in args like "I'm Groot", use escape syntax: e.g 'I'\''m Groot
 Load only the minimal necessary context from each artifact:
 
 **From spec.md:**
-
 - Overview/Context
 - Functional Requirements
 - Success Criteria (measurable outcomes — e.g., performance, security, availability, user success, business impact)
@@ -81,14 +82,12 @@ Load only the minimal necessary context from each artifact:
 - Edge Cases (if present)
 
 **From plan.md:**
-
 - Architecture/stack choices
 - Data Model references
 - Phases
 - Technical constraints
 
 **From tasks.md:**
-
 - Task IDs
 - Descriptions
 - Phase grouping
@@ -96,13 +95,11 @@ Load only the minimal necessary context from each artifact:
 - Referenced file paths
 
 **From constitution:**
-
 - Load `.specify/memory/constitution.md` for principle validation
 
 ### 3. Build Semantic Models
 
 Create internal representations (do not include raw artifacts in output):
-
 - **Requirements inventory**: For each Functional Requirement (FR-###) and Success Criterion (SC-###), record a stable key. Use the explicit FR-/SC- identifier as the primary key when present, and optionally also derive an imperative-phrase slug for readability (e.g., "User can upload file" → `user-can-upload-file`). Include only Success Criteria items that require buildable work (e.g., load-testing infrastructure, security audit tooling), and exclude post-launch outcome metrics and business KPIs (e.g., "Reduce support tickets by 50%").
 - **User story/action inventory**: Discrete user actions with acceptance criteria
 - **Task coverage mapping**: Map each task to one or more requirements or stories (inference by keyword / explicit reference patterns like IDs or key phrases)
@@ -149,7 +146,6 @@ Focus on high-signal findings. Limit to 50 findings total; aggregate remainder i
 ### 5. Severity Assignment
 
 Use this heuristic to prioritize findings:
-
 - **CRITICAL**: Violates constitution MUST, missing core spec artifact, or requirement with zero coverage that blocks baseline functionality
 - **HIGH**: Duplicate or conflicting requirement, ambiguous security/performance attribute, untestable acceptance criterion
 - **MEDIUM**: Terminology drift, missing non-functional task coverage, underspecified edge case
@@ -161,23 +157,22 @@ Output a Markdown report (no file writes) with the following structure:
 
 ## Specification Analysis Report
 
-| ID | Category | Severity | Location(s) | Summary | Recommendation |
-|----|----------|----------|-------------|---------|----------------|
-| A1 | Duplication | HIGH | spec.md:L120-134 | Two similar requirements ... | Merge phrasing; keep clearer version |
+| ID  | Category    | Severity | Location(s)      | Summary                      | Recommendation                       |
+| --- | ----------- | -------- | ---------------- | ---------------------------- | ------------------------------------ |
+| A1  | Duplication | HIGH     | spec.md:L120-134 | Two similar requirements ... | Merge phrasing; keep clearer version |
 
 (Add one row per finding; generate stable IDs prefixed by category initial.)
 
 **Coverage Summary Table:**
 
 | Requirement Key | Has Task? | Task IDs | Notes |
-|-----------------|-----------|----------|-------|
+| --------------- | --------- | -------- | ----- |
 
 **Constitution Alignment Issues:** (if any)
 
 **Unmapped Tasks:** (if any)
 
 **Metrics:**
-
 - Total Requirements
 - Total Tasks
 - Coverage % (requirements with >=1 task)
@@ -188,7 +183,6 @@ Output a Markdown report (no file writes) with the following structure:
 ### 7. Provide Next Actions
 
 At end of report, output a concise Next Actions block:
-
 - If CRITICAL issues exist: Recommend resolving before `/speckit.implement`
 - If only LOW/MEDIUM: User may proceed, but provide improvement suggestions
 - Provide explicit command suggestions: e.g., "Run /speckit.specify with refinement", "Run /speckit.plan to adjust architecture", "Manually edit tasks.md to add coverage for 'performance-metrics'"
@@ -208,6 +202,7 @@ After reporting, check if `.specify/extensions.yml` exists in the project root.
   - If the hook defines a non-empty `condition`, skip the hook and leave condition evaluation to the HookExecutor implementation
 - For each executable hook, output the following based on its `optional` flag:
   - **Optional hook** (`optional: true`):
+
     ```
     ## Extension Hooks
 
@@ -219,6 +214,7 @@ After reporting, check if `.specify/extensions.yml` exists in the project root.
     To execute: `/{command}`
     ```
   - **Mandatory hook** (`optional: false`):
+
     ```
     ## Extension Hooks
 
@@ -226,6 +222,7 @@ After reporting, check if `.specify/extensions.yml` exists in the project root.
     Executing: `/{command}`
     EXECUTE_COMMAND: {command}
     ```
+
     After emitting the block above you MUST actually invoke the hook and wait for it to finish before continuing. Run it the same way you would run the command yourself in this agent/session (the invocation may differ from the literal `{command}` id shown above, e.g. a skills-mode agent runs it as `/skill:speckit-...` or `$speckit-...`). Emitting the block alone does not run the hook.
 - If no hooks are registered or `.specify/extensions.yml` does not exist, skip silently
 

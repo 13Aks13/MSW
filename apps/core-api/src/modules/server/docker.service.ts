@@ -1,9 +1,9 @@
-import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import Docker from 'dockerode';
-import { Readable, Writable } from 'node:stream';
-import { finished } from 'node:stream/promises';
-import type { LogLineDto, ServerStatsDto, ServerStatusDto } from '@mc/shared';
+import { Readable, Writable } from "node:stream";
+import { finished } from "node:stream/promises";
+import type { LogLineDto, ServerStatsDto, ServerStatusDto } from "@mc/shared";
+import { Injectable, Logger, type OnModuleDestroy } from "@nestjs/common";
+import type { ConfigService } from "@nestjs/config";
+import Docker from "dockerode";
 
 const CONTAINER_NOT_FOUND = 404;
 const LOG_LINE_RE = /^(\d{4}-\d{2}-\d{2}T[^\s]+)\s(.*)$/;
@@ -17,8 +17,8 @@ export class DockerService implements OnModuleDestroy {
   readonly containerName: string;
 
   constructor(private readonly config: ConfigService) {
-    this.containerName = config.get<string>('BEDROCK_CONTAINER', 'mc-bedrock');
-    const socketPath = config.get<string>('DOCKER_SOCKET', '/var/run/docker.sock');
+    this.containerName = config.get<string>("BEDROCK_CONTAINER", "mc-bedrock");
+    const socketPath = config.get<string>("DOCKER_SOCKET", "/var/run/docker.sock");
     this.docker = new Docker({ socketPath });
   }
 
@@ -54,7 +54,7 @@ export class DockerService implements OnModuleDestroy {
       return {
         containerName: this.containerName,
         exists: false,
-        state: 'unknown',
+        state: "unknown",
         image: null,
         startedAt: null,
         uptimeSeconds: 0,
@@ -69,16 +69,18 @@ export class DockerService implements OnModuleDestroy {
       containerName: this.containerName,
       exists: true,
       state: !running
-        ? 'stopped'
+        ? "stopped"
         : info.State.Restarting
-          ? 'restarting'
+          ? "restarting"
           : info.State.Paused
-            ? 'paused'
-            : 'running',
+            ? "paused"
+            : "running",
       image: info.Config.Image,
       startedAt: startedAt && running ? startedAt.toISOString() : null,
       uptimeSeconds:
-        startedAt && running ? Math.max(0, Math.floor((Date.now() - startedAt.getTime()) / 1000)) : 0,
+        startedAt && running
+          ? Math.max(0, Math.floor((Date.now() - startedAt.getTime()) / 1000))
+          : 0,
       health: info.State.Health?.Status ?? null,
       playersOnline: null,
     };
@@ -89,9 +91,7 @@ export class DockerService implements OnModuleDestroy {
     const cpuDelta = raw.cpu_stats.cpu_usage.total_usage - raw.precpu_stats.cpu_usage.total_usage;
     const systemDelta = raw.cpu_stats.system_cpu_usage - raw.precpu_stats.system_cpu_usage;
     const onlineCpus =
-      raw.cpu_stats.online_cpus ??
-      raw.cpu_stats.cpu_usage.percpu_usage?.length ??
-      1;
+      raw.cpu_stats.online_cpus ?? raw.cpu_stats.cpu_usage.percpu_usage?.length ?? 1;
     const cpuPercent =
       systemDelta > 0 && cpuDelta > 0 ? (cpuDelta / systemDelta) * onlineCpus * 100 : 0;
 
@@ -151,7 +151,7 @@ export class DockerService implements OnModuleDestroy {
   }
 
   async sendCommand(command: string): Promise<string> {
-    const output = await this.exec(['send-command', command]);
+    const output = await this.exec(["send-command", command]);
     return output.stdout;
   }
 
@@ -163,8 +163,8 @@ export class DockerService implements OnModuleDestroy {
     });
     const stream = await exec.start({});
     return new Promise((resolve, reject) => {
-      let stdout = '';
-      let stderr = '';
+      let stdout = "";
+      let stderr = "";
       const out = new Writable({
         write(chunk, _encoding, callback) {
           stdout += chunk.toString();
@@ -178,8 +178,8 @@ export class DockerService implements OnModuleDestroy {
         },
       });
       this.docker.modem.demuxStream(stream, out, err);
-      stream.on('end', () => resolve({ stdout, stderr }));
-      stream.on('error', reject);
+      stream.on("end", () => resolve({ stdout, stderr }));
+      stream.on("error", reject);
     });
   }
 
@@ -206,13 +206,13 @@ export class DockerService implements OnModuleDestroy {
       timestamps: true,
     })) as unknown as NodeJS.ReadableStream & { destroy?: () => void };
 
-    const attach = (streamName: 'stdout' | 'stderr') => {
-      let buffer = '';
+    const attach = (streamName: "stdout" | "stderr") => {
+      let buffer = "";
       return new Writable({
         write: (chunk: Buffer, _encoding, callback) => {
-          buffer += chunk.toString('utf8');
-          const lines = buffer.split('\n');
-          buffer = lines.pop() ?? '';
+          buffer += chunk.toString("utf8");
+          const lines = buffer.split("\n");
+          buffer = lines.pop() ?? "";
           for (const line of lines) {
             if (!line.trim()) continue;
             const match = LOG_LINE_RE.exec(line);
@@ -228,16 +228,17 @@ export class DockerService implements OnModuleDestroy {
     };
 
     if (info.Config.Tty) {
-      stream.on('data', (chunk: Buffer) => {
-        for (const line of chunk.toString('utf8').split('\n')) {
-          if (line.trim()) onLine({ stream: 'stdout', timestamp: new Date().toISOString(), message: line });
+      stream.on("data", (chunk: Buffer) => {
+        for (const line of chunk.toString("utf8").split("\n")) {
+          if (line.trim())
+            onLine({ stream: "stdout", timestamp: new Date().toISOString(), message: line });
         }
       });
     } else {
-      this.docker.modem.demuxStream(stream, attach('stdout'), attach('stderr'));
+      this.docker.modem.demuxStream(stream, attach("stdout"), attach("stderr"));
     }
 
-    stream.on('error', (error: Error) => {
+    stream.on("error", (error: Error) => {
       this.logger.warn(`Log stream error: ${error.message}`);
     });
 
@@ -257,9 +258,9 @@ export class DockerService implements OnModuleDestroy {
       timestamps: true,
     })) as unknown as Buffer;
 
-    if (info.Config.Tty) return buffer.toString('utf8');
+    if (info.Config.Tty) return buffer.toString("utf8");
 
-    let stdout = '';
+    let stdout = "";
     const out = new Writable({
       write(chunk, _encoding, callback) {
         stdout += chunk.toString();

@@ -1,14 +1,14 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { DataSource } from 'typeorm';
 import type {
   DashboardDto,
   LogLineDto,
   PackType,
   ServerStatsDto,
   ServerStatusDto,
-} from '@mc/shared';
-import { DockerService } from './docker.service.js';
-import { StorageService } from '../../common/storage/storage.service.js';
+} from "@mc/shared";
+import { Injectable, Logger } from "@nestjs/common";
+import type { DataSource } from "typeorm";
+import type { StorageService } from "../../common/storage/storage.service.js";
+import type { DockerService } from "./docker.service.js";
 
 @Injectable()
 export class ServerService {
@@ -59,8 +59,12 @@ export class ServerService {
       this.dataSource
         .query(`SELECT type, count(*)::int AS count FROM packs GROUP BY type`)
         .catch(() => [] as Array<{ type: PackType; count: number }>),
-      this.dataSource.query(`SELECT count(*)::int AS count FROM worlds`).catch(() => [{ count: 0 }]),
-      this.dataSource.query(`SELECT count(*)::int AS count FROM backups`).catch(() => [{ count: 0 }]),
+      this.dataSource
+        .query(`SELECT count(*)::int AS count FROM worlds`)
+        .catch(() => [{ count: 0 }]),
+      this.dataSource
+        .query(`SELECT count(*)::int AS count FROM backups`)
+        .catch(() => [{ count: 0 }]),
       this.storage.diskUsage(),
     ]);
 
@@ -70,18 +74,16 @@ export class ServerService {
     }
 
     return {
-      server:
-        server ??
-        {
-          containerName: 'mc-bedrock',
-          exists: false,
-          state: 'unknown',
-          image: null,
-          startedAt: null,
-          uptimeSeconds: 0,
-          health: null,
-          playersOnline: null,
-        },
+      server: server ?? {
+        containerName: "mc-bedrock",
+        exists: false,
+        state: "unknown",
+        image: null,
+        startedAt: null,
+        uptimeSeconds: 0,
+        health: null,
+        playersOnline: null,
+      },
       stats,
       packs,
       worlds: Number((worldRows as Array<{ count: number }>)[0]?.count ?? 0),
