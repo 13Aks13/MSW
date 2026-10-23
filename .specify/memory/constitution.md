@@ -1,59 +1,81 @@
-# [PROJECT_NAME] Constitution
+<!-- Sync Impact Report
+Version change: unversioned scaffold → 1.0.0
+Modified principles: none (initial constitution adoption)
+Added sections: Core Principles (I–V), Engineering Standards, Development Workflow and Quality Gates, Governance
+Removed sections: none
+Follow-up TODOs: none
+-->
 
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+# Minecraft Bedrock Management Platform Constitution
 
 ## Core Principles
 
-### [PRINCIPLE_1_NAME]
+### I. Modular Package-First Architecture
 
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+Every feature is built as a self-contained workspace package under `apps/*` or `packages/*`. Each package MUST be independently testable, independently deployable where applicable, and documented with a README. Organizational-only packages with no clear purpose are prohibited. Current structure: `apps/core-api` (NestJS backend), `apps/web-app` (React frontend), `packages/shared` (shared types and API helpers).
 
-### [PRINCIPLE_2_NAME]
+Rationale: The monorepo uses pnpm workspaces; modular boundaries prevent coupling between the backend, frontend, and shared layers, and make each part of the system independently verifiable.
 
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+### II. Test-First Development (TDD)
 
-### [PRINCIPLE_3_NAME]
+Tests are written before implementation for all new behavior. The Red-Green-Refactor cycle is strictly enforced: a failing test MUST exist and be approved, then the implementation makes it pass. `pnpm test` MUST pass for all workspace packages before any change is considered complete.
 
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+Rationale: Test-first guarantees that every feature has verifiable behavior and prevents regressions across the NestJS API, React frontend, and shared packages.
 
-### [PRINCIPLE_4_NAME]
+### III. Type-Safe TypeScript Everywhere
 
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+All code is written in TypeScript with strict type checking enabled. `pnpm typecheck` MUST pass for all packages. Shared types live in `packages/shared` and are consumed by `apps/core-api` and `apps/web-app`. The use of `any` is prohibited without a documented justification in the code.
 
-### [PRINCIPLE_5_NAME]
+Rationale: A type-safe codebase across backend, frontend, and shared layers catches interface mismatches at compile time, which is critical for a platform whose frontend and backend communicate over typed API contracts.
 
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+### IV. Conventional Commits and Automated Releases
 
-## [SECTION_2_NAME]
+All commits follow the Conventional Commits format (`type(scope): description`) and are enforced by Commitlint. Releases are automated via semantic-release on push to `main`, which bumps versions, generates changelogs, and creates GitHub releases.
 
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+Rationale: Conventional Commits power automated semantic versioning and release notes, keeping the platform's release process predictable and auditable.
 
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
+### V. Observability and Operational Transparency
 
-## [SECTION_3_NAME]
+Server logs are streamed in real time to administrators via Socket.IO. Structured logging is required in the NestJS backend. Local development uses Docker Compose to mirror production services (Traefik, PostgreSQL, core-api, web-app, Bedrock server).
 
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
+Rationale: Operators of a Minecraft Bedrock server need immediate visibility into server state and logs; observable, locally reproducible environments reduce operational incidents.
 
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+## Engineering Standards
+
+The platform is a pnpm monorepo with the following technology stack:
+
+| Layer              | Technology                               |
+| ------------------ | ---------------------------------------- |
+| Monorepo           | pnpm workspaces (`apps/*`, `packages/*`) |
+| Backend            | NestJS, TypeScript, TypeORM, PostgreSQL  |
+| Frontend           | React, TypeScript, Vite, Ant Design      |
+| State              | Zustand, TanStack Query                  |
+| Real-time          | Socket.IO                                |
+| Docker integration | Dockerode, Docker Compose, Traefik       |
+| Formatting / Lint  | Biome                                    |
+| Commits            | Conventional Commits + Commitlint        |
+| Releases           | semantic-release (GitHub Actions)        |
+
+Required runtimes: Node.js >= 24.11, pnpm >= 10. Docker and Docker Compose are required for containerized development.
+
+## Development Workflow and Quality Gates
+
+- `pnpm dev` — start core-api and web-app in parallel
+- `pnpm build` — build all workspace packages
+- `pnpm typecheck` — type-check all packages
+- `pnpm lint` — run Biome linter on all packages
+- `pnpm format` — auto-fix formatting with Biome
+- `pnpm test` — run tests for all packages
+- `pnpm compose:up` / `pnpm compose:down` — start or stop all Docker services
+
+All pull requests MUST be reviewed and MUST pass typecheck, lint, and tests before merge. Commit messages follow Conventional Commits and are validated by Commitlint and lint-staged on commit.
 
 ## Governance
 
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
+This Constitution supersedes all other development practices in the repository. Where a practice conflicts with a Principle, the Principle governs.
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
+Amendments to this Constitution MUST be documented in this file, approved through a pull request, and include a migration plan for any affected practices. The version is bumped according to semantic versioning: MAJOR for backward-incompatible governance or principle changes, MINOR for new or materially expanded principles or sections, PATCH for clarifications and wording fixes.
 
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+Compliance is reviewed during every pull request: reviewers verify that the change aligns with the Core Principles, Engineering Standards, and Development Workflow. Non-compliant changes MUST be justified explicitly or amended before merge.
+
+**Version**: 1.0.0 | **Ratified**: 2026-10-23 | **Last Amended**: 2026-10-23
