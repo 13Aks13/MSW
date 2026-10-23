@@ -5,7 +5,6 @@ A web-based administration platform for Minecraft Bedrock Server running in Dock
 ## Overview
 
 This platform provides centralized management of:
-
 - Minecraft Bedrock Server lifecycle (start/stop/restart)
 - Resource Packs and Behavior Packs
 - Worlds (create, delete, clone, backup, restore)
@@ -17,17 +16,17 @@ Administrators can upload ZIP bundles containing multiple Resource Packs and Beh
 
 ## Tech Stack
 
-| Layer | Technology |
-|-------|------------|
-| Monorepo | pnpm workspaces (`apps/*`, `packages/*`) |
-| Backend | NestJS, TypeScript, TypeORM, PostgreSQL |
-| Frontend | React, TypeScript, Vite, Ant Design |
-| State | Zustand, TanStack Query |
-| Real-time | Socket.IO |
-| Docker integration | Dockerode, Docker Compose, Traefik |
-| Formatting / Lint | Biome |
-| Commits | Conventional Commits + Commitlint |
-| Releases | semantic-release (GitHub Actions) |
+| Layer              | Technology                               |
+| ------------------ | ---------------------------------------- |
+| Monorepo           | pnpm workspaces (`apps/*`, `packages/*`) |
+| Backend            | NestJS, TypeScript, TypeORM, PostgreSQL  |
+| Frontend           | React, TypeScript, Vite, Ant Design      |
+| State              | Zustand, TanStack Query                  |
+| Real-time          | Socket.IO                                |
+| Docker integration | Dockerode, Docker Compose, Traefik       |
+| Formatting / Lint  | Biome                                    |
+| Commits            | Conventional Commits + Commitlint        |
+| Releases           | semantic-release (GitHub Actions)        |
 
 ## Repository Structure
 
@@ -114,17 +113,17 @@ pnpm compose:down
 
 ## Available Scripts
 
-| Script | Description |
-|--------|-------------|
-| `pnpm dev` | Start core-api + web-app in dev mode |
-| `pnpm build` | Build all workspace packages |
-| `pnpm typecheck` | Type-check all packages |
-| `pnpm lint` | Run Biome linter on all packages |
-| `pnpm format` | Auto-fix formatting with Biome |
-| `pnpm test` | Run tests for all packages |
-| `pnpm release` | Trigger semantic-release |
-| `pnpm compose:up` | Start all Docker services |
-| `pnpm compose:down` | Stop all Docker services |
+| Script              | Description                          |
+| ------------------- | ------------------------------------ |
+| `pnpm dev`          | Start core-api + web-app in dev mode |
+| `pnpm build`        | Build all workspace packages         |
+| `pnpm typecheck`    | Type-check all packages              |
+| `pnpm lint`         | Run Biome linter on all packages     |
+| `pnpm format`       | Auto-fix formatting with Biome       |
+| `pnpm test`         | Run tests for all packages           |
+| `pnpm release`      | Trigger semantic-release             |
+| `pnpm compose:up`   | Start all Docker services            |
+| `pnpm compose:down` | Stop all Docker services             |
 
 ## Releases
 

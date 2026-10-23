@@ -320,8 +320,8 @@ export default function PacksPage() {
                 message="Warnings"
                 description={
                   <ul style={{ margin: 0, paddingInlineStart: 18 }}>
-                    {report.warnings.map((warning, index) => (
-                      <li key={`${warning.message}-${index}`}>
+                    {report.warnings.map((warning) => (
+                      <li key={warning.message}>
                         {warning.pack ? `${warning.pack}: ` : ""}
                         {warning.message}
                       </li>

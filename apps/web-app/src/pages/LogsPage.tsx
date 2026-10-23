@@ -39,7 +39,7 @@ export default function LogsPage() {
     if (!autoScroll) return;
     const element = consoleRef.current;
     if (element) element.scrollTop = element.scrollHeight;
-  }, [filtered, autoScroll]);
+  }, [autoScroll]);
 
   const togglePause = () => {
     const next = !paused;
@@ -99,9 +99,9 @@ export default function LogsPage() {
               {connected ? "Waiting for log output…" : "Connecting to the log stream…"}
             </div>
           ) : (
-            filtered.map((line, index) => (
+            filtered.map((line) => (
               <div
-                key={`${line.timestamp}-${index}`}
+                key={line.timestamp}
                 className={`log-line ${line.stream === "stderr" ? "log-stderr" : ""}`}
               >
                 <span className="log-time">{line.timestamp.slice(11, 19)}</span>

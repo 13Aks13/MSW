@@ -1,3 +1,4 @@
+import type { Dirent } from "node:fs";
 import { readdir, stat } from "node:fs/promises";
 import path from "node:path";
 import { Logger } from "@nestjs/common";
@@ -6,7 +7,7 @@ const logger = new Logger("fs-utils");
 
 export async function dirSize(dir: string): Promise<number> {
   let total = 0;
-  let entries;
+  let entries: Dirent[] = [];
   try {
     entries = await readdir(dir, { withFileTypes: true });
   } catch {
