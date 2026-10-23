@@ -6,7 +6,9 @@ import { createTestApp } from "./test-helpers.js";
 
 describe("Auth (Contract)", () => {
   let app: INestApplication;
-
+  beforeAll(async () => {
+    app = await createTestApp();
+  });
   beforeAll(async () => {
   beforeAll(async () => {
     app = await createTestApp();
