@@ -75,7 +75,6 @@ With Mau, you can deploy your application in just a few clicks, allowing you to 
 In production applications, observability is essential for understanding how your system behaves, detecting issues early, and maintaining reliable performance.
 
 [NestJS Observe](https://observe.nestjs.com) automatically instruments your NestJS application, giving you deep visibility into your system with minimal setup:
-
 - **Distributed tracing:** Follow requests across services and understand how they flow through your system.
 - **Waterfall analysis:** Visualize request execution and identify slow operations, bottlenecks, and unexpected delays.
 - **Performance analysis:** Analyze application performance in real time and quickly pinpoint areas that need optimization.
@@ -106,7 +105,6 @@ The free plan needs no payment details and covers 300,000 events a month. You ca
 ## Resources
 
 Check out a few resources that may come in handy when working with NestJS:
-
 - Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
 - For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
 - To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).

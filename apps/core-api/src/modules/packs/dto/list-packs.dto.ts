@@ -1,6 +1,6 @@
-import { Type } from 'class-transformer';
-import { IsEnum, IsInt, IsOptional, IsString, Max, MaxLength, Min } from 'class-validator';
-import { PACK_TYPES, type PackType } from '@mc/shared';
+import { PACK_TYPES, type PackType } from "@mc/shared";
+import { Type } from "class-transformer";
+import { IsEnum, IsInt, IsOptional, IsString, Max, MaxLength, Min } from "class-validator";
 export class ListPacksQueryDto {
   @IsOptional()
   @IsEnum(PACK_TYPES)

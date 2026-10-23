@@ -1,32 +1,27 @@
+import { createReadStream } from "node:fs";
+import { cp, mkdir, readdir, rm, stat } from "node:fs/promises";
+import path from "node:path";
+import { type BackupDto, formatBytes, type Paginated, slugify } from "@mc/shared";
 import {
   BadRequestException,
   ConflictException,
   Injectable,
   Logger,
   NotFoundException,
-  OnModuleInit,
-} from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { cp, mkdir, readdir, rm, stat } from 'node:fs/promises';
-import { createReadStream } from 'node:fs';
-import path from 'node:path';
-import { c as createTar, x as extractTar } from 'tar';
-import {
-  type BackupDto,
-  type Paginated,
-  formatBytes,
-  slugify,
-} from '@mc/shared';
-import { BackupEntity } from './entities/backup.entity.js';
-import { WorldEntity } from '../worlds/entities/world.entity.js';
-import { StorageService } from '../../common/storage/storage.service.js';
-import { ServerService } from '../server/server.service.js';
-import { WorldsService } from '../worlds/worlds.service.js';
-import { dirSize, pathExists } from '../../common/utils/fs.utils.js';
-import { envFlag } from '../../config/env.js';
-import type { ListPacksQueryDto } from '../packs/dto/list-packs.dto.js';
+  type OnModuleInit,
+} from "@nestjs/common";
+import type { ConfigService } from "@nestjs/config";
+import { InjectRepository } from "@nestjs/typeorm";
+import { c as createTar, x as extractTar } from "tar";
+import type { Repository } from "typeorm";
+import type { StorageService } from "../../common/storage/storage.service.js";
+import { dirSize, pathExists } from "../../common/utils/fs.utils.js";
+import { envFlag } from "../../config/env.js";
+import type { ListPacksQueryDto } from "../packs/dto/list-packs.dto.js";
+import type { ServerService } from "../server/server.service.js";
+import { WorldEntity } from "../worlds/entities/world.entity.js";
+import type { WorldsService } from "../worlds/worlds.service.js";
+import { BackupEntity } from "./entities/backup.entity.js";
 
 @Injectable()
 export class BackupsService implements OnModuleInit {
@@ -43,16 +38,16 @@ export class BackupsService implements OnModuleInit {
     private readonly worldsService: WorldsService,
     config: ConfigService,
   ) {
-    this.gracefulStop = envFlag(config.get<string>('BACKUP_GRACEFUL_STOP'), true);
+    this.gracefulStop = envFlag(config.get<string>("BACKUP_GRACEFUL_STOP"), true);
   }
 
   async onModuleInit(): Promise<void> {
     // Backups left in "creating" state mean the process died mid-archive.
-    const stale = await this.backups.findBy({ status: 'creating' });
+    const stale = await this.backups.findBy({ status: "creating" });
     for (const backup of stale) {
       await this.backups.update(
         { id: backup.id },
-        { status: 'failed', error: 'Interrupted by an API restart' },
+        { status: "failed", error: "Interrupted by an API restart" },
       );
     }
     if (stale.length > 0) {
@@ -64,7 +59,7 @@ export class BackupsService implements OnModuleInit {
     const page = query.page ?? 1;
     const limit = query.limit ?? 50;
     const [items, total] = await this.backups.findAndCount({
-      order: { createdAt: 'DESC' },
+      order: { createdAt: "DESC" },
       skip: (page - 1) * limit,
       take: limit,
     });
@@ -92,35 +87,30 @@ export class BackupsService implements OnModuleInit {
   }
 
   async create(worldId?: string): Promise<BackupDto> {
-    const world = worldId
-      ? await this.worlds.findOneBy({ id: worldId })
-      : null;
+    const world = worldId ? await this.worlds.findOneBy({ id: worldId }) : null;
     if (worldId && !world) throw new NotFoundException(`World ${worldId} not found`);
 
     const sourceDir = world
       ? path.join(this.storage.worldsDir(), world.folderName)
       : this.storage.worldsDir();
     if (!(await pathExists(sourceDir))) {
-      throw new ConflictException('World folder is missing on disk');
+      throw new ConflictException("World folder is missing on disk");
     }
 
-    const label = world ? slugify(world.name, 'world') : 'all-worlds';
-    const stamp = new Date()
-      .toISOString()
-      .replace(/[:T]/g, '-')
-      .replace(/\..+$/, '');
+    const label = world ? slugify(world.name, "world") : "all-worlds";
+    const stamp = new Date().toISOString().replace(/[:T]/g, "-").replace(/\..+$/, "");
     const fileName = `${label}-${stamp}.tar.gz`;
     const target = path.join(this.storage.backupsDir(), fileName);
 
-    const activeWorld = await this.worlds.findOneBy({ status: 'active' });
+    const activeWorld = await this.worlds.findOneBy({ status: "active" });
     const includesActiveWorld = !world || (activeWorld !== null && world.id === activeWorld.id);
 
     const backup = await this.backups.save(
       this.backups.create({
         worldId: world?.id ?? null,
-        worldName: world?.name ?? 'All worlds',
+        worldName: world?.name ?? "All worlds",
         fileName,
-        status: 'creating',
+        status: "creating",
       }),
     );
 
@@ -131,7 +121,7 @@ export class BackupsService implements OnModuleInit {
       // always contains the latest live progress.
       if (this.gracefulStop && includesActiveWorld) {
         const status = await this.server.status().catch(() => null);
-        if (status?.state === 'running') {
+        if (status?.state === "running") {
           await this.server.stop();
           stopped = true;
         }
@@ -149,17 +139,17 @@ export class BackupsService implements OnModuleInit {
           portable: true,
           noMtime: false,
         },
-        ['.'],
+        ["."],
       );
 
       const fileStats = await stat(target);
       backup.sizeBytes = String(fileStats.size);
-      backup.status = 'ready';
+      backup.status = "ready";
       backup.error = null;
       await this.backups.save(backup);
       return this.toDto(backup);
     } catch (error) {
-      backup.status = 'failed';
+      backup.status = "failed";
       backup.error = (error as Error).message;
       await this.backups.save(backup);
       await rm(target, { force: true }).catch(() => undefined);
@@ -176,7 +166,7 @@ export class BackupsService implements OnModuleInit {
 
   async restore(id: string, worldId: string): Promise<BackupDto> {
     const backup = await this.get(id);
-    if (backup.status !== 'ready') {
+    if (backup.status !== "ready") {
       throw new ConflictException(`Backup is not ready (status: ${backup.status})`);
     }
 
@@ -185,7 +175,7 @@ export class BackupsService implements OnModuleInit {
 
     const archive = this.filePath(backup);
     if (!(await pathExists(archive))) {
-      throw new NotFoundException('Backup archive is missing on disk');
+      throw new NotFoundException("Backup archive is missing on disk");
     }
 
     const worldDir = path.join(this.storage.worldsDir(), world.folderName);
@@ -204,12 +194,9 @@ export class BackupsService implements OnModuleInit {
 
       await rm(worldDir, { recursive: true, force: true });
       await cp(extractionDir, worldDir, { recursive: true, dereference: false });
-      await this.worlds.update(
-        { id: world.id },
-        { sizeBytes: String(await dirSize(worldDir)) },
-      );
+      await this.worlds.update({ id: world.id }, { sizeBytes: String(await dirSize(worldDir)) });
 
-      if (world.status === 'active') {
+      if (world.status === "active") {
         const activeDir = this.storage.activeWorldDir();
         await rm(activeDir, { recursive: true, force: true });
         await cp(worldDir, activeDir, { recursive: true, dereference: false });
@@ -231,14 +218,18 @@ export class BackupsService implements OnModuleInit {
 
   private async assertArchiveRoot(dir: string): Promise<void> {
     const entries = await readdir(dir);
-    if (entries.includes('level.dat') || entries.includes('db') || entries.includes('world_behavior_packs.json')) {
+    if (
+      entries.includes("level.dat") ||
+      entries.includes("db") ||
+      entries.includes("world_behavior_packs.json")
+    ) {
       return;
     }
-    const nested = await readdir(path.join(dir, entries[0] ?? ''), { withFileTypes: true }).catch(
+    const nested = await readdir(path.join(dir, entries[0] ?? ""), { withFileTypes: true }).catch(
       () => [],
     );
-    if (nested.some((entry) => entry.name === 'level.dat' || entry.name === 'db')) return;
-    throw new BadRequestException('Archive does not look like a Bedrock world');
+    if (nested.some((entry) => entry.name === "level.dat" || entry.name === "db")) return;
+    throw new BadRequestException("Archive does not look like a Bedrock world");
   }
 
   async remove(id: string): Promise<void> {

@@ -1,9 +1,9 @@
-import { BadRequestException, Injectable, Logger } from '@nestjs/common';
-import { createWriteStream } from 'node:fs';
-import { mkdir, rm } from 'node:fs/promises';
-import path from 'node:path';
-import { pipeline } from 'node:stream/promises';
-import yauzl from 'yauzl';
+import { createWriteStream } from "node:fs";
+import { mkdir, rm } from "node:fs/promises";
+import path from "node:path";
+import { pipeline } from "node:stream/promises";
+import { BadRequestException, Injectable, Logger } from "@nestjs/common";
+import yauzl from "yauzl";
 
 export interface ExtractionLimits {
   maxEntries: number;
@@ -37,7 +37,11 @@ export class ZipExtractorService {
     return new Promise<ExtractionResult>((resolve, reject) => {
       yauzl.open(zipPath, { lazyEntries: true, autoClose: true }, (openError, zipFile) => {
         if (openError || !zipFile) {
-          reject(new BadRequestException(`Cannot open ZIP archive: ${openError?.message ?? 'unknown error'}`));
+          reject(
+            new BadRequestException(
+              `Cannot open ZIP archive: ${openError?.message ?? "unknown error"}`,
+            ),
+          );
           return;
         }
 
@@ -56,9 +60,9 @@ export class ZipExtractorService {
           );
         };
 
-        zipFile.on('error', fail);
+        zipFile.on("error", fail);
 
-        zipFile.on('entry', (entry: yauzl.Entry) => {
+        zipFile.on("entry", (entry: yauzl.Entry) => {
           void this.processEntry(zipFile, entry, root, limits)
             .then((written) => {
               if (settled) return;
@@ -79,7 +83,7 @@ export class ZipExtractorService {
             .catch(fail);
         });
 
-        zipFile.on('end', () => {
+        zipFile.on("end", () => {
           if (settled) return;
           settled = true;
           resolve({ files: entries, bytes });
@@ -96,22 +100,22 @@ export class ZipExtractorService {
     root: string,
     limits: ExtractionLimits,
   ): Promise<number> {
-    const entryName = entry.fileName.replace(/\\/g, '/');
+    const entryName = entry.fileName.replace(/\\/g, "/");
 
-    if (entryName.includes('\0')) {
-      throw new BadRequestException('Archive contains a file name with a NUL byte');
+    if (entryName.includes("\0")) {
+      throw new BadRequestException("Archive contains a file name with a NUL byte");
     }
-    if (entryName.startsWith('/') || /^[a-zA-Z]:/.test(entryName)) {
+    if (entryName.startsWith("/") || /^[a-zA-Z]:/.test(entryName)) {
       throw new BadRequestException(`Archive contains an absolute path: ${entryName}`);
     }
-    if (entryName.split('/').some((segment) => segment === '..')) {
+    if (entryName.split("/").some((segment) => segment === "..")) {
       throw new BadRequestException(`Archive contains a path traversal entry: ${entryName}`);
     }
-    if (entryName.split('/').filter(Boolean).length > limits.maxDepth) {
+    if (entryName.split("/").filter(Boolean).length > limits.maxDepth) {
       throw new BadRequestException(`Archive path is nested too deeply: ${entryName}`);
     }
 
-    const isDirectory = entryName.endsWith('/');
+    const isDirectory = entryName.endsWith("/");
     const target = path.resolve(root, entryName);
     if (target !== root && !target.startsWith(`${root}${path.sep}`)) {
       throw new BadRequestException(`Archive entry escapes the extraction directory: ${entryName}`);
@@ -129,14 +133,17 @@ export class ZipExtractorService {
 
     await mkdir(path.dirname(target), { recursive: true });
     const readStream = await this.openReadStream(zipFile, entry);
-    await pipeline(readStream, createWriteStream(target, { flags: 'wx', mode: 0o640 }));
+    await pipeline(readStream, createWriteStream(target, { flags: "wx", mode: 0o640 }));
     return entry.uncompressedSize;
   }
 
-  private openReadStream(zipFile: yauzl.ZipFile, entry: yauzl.Entry): Promise<NodeJS.ReadableStream> {
+  private openReadStream(
+    zipFile: yauzl.ZipFile,
+    entry: yauzl.Entry,
+  ): Promise<NodeJS.ReadableStream> {
     return new Promise((resolve, reject) => {
       zipFile.openReadStream(entry, (error, stream) => {
-        if (error || !stream) reject(error ?? new Error('empty stream'));
+        if (error || !stream) reject(error ?? new Error("empty stream"));
         else resolve(stream);
       });
     });

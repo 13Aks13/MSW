@@ -1,7 +1,7 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
-import { readFile, readdir, stat } from 'node:fs/promises';
-import path from 'node:path';
-import { isUuid, parseVersion, type PackDependency, type PackType } from '@mc/shared';
+import { readdir, readFile, stat } from "node:fs/promises";
+import path from "node:path";
+import { isUuid, type PackDependency, type PackType, parseVersion } from "@mc/shared";
+import { BadRequestException, Injectable } from "@nestjs/common";
 
 const MAX_MANIFEST_BYTES = 1024 * 1024;
 
@@ -28,9 +28,9 @@ export class ManifestService {
       if (entry.isSymbolicLink()) continue;
       const fullPath = path.join(root, entry.name);
       if (entry.isDirectory()) {
-        if (entry.name === 'node_modules' || entry.name === '__MACOSX') continue;
+        if (entry.name === "node_modules" || entry.name === "__MACOSX") continue;
         manifests.push(...(await this.findManifests(fullPath, depth + 1)));
-      } else if (entry.isFile() && entry.name === 'manifest.json') {
+      } else if (entry.isFile() && entry.name === "manifest.json") {
         manifests.push(fullPath);
       }
     }
@@ -46,12 +46,12 @@ export class ManifestService {
 
     let raw: unknown;
     try {
-      raw = JSON.parse(await readFile(manifestPath, 'utf8'));
+      raw = JSON.parse(await readFile(manifestPath, "utf8"));
     } catch (error) {
       throw new BadRequestException(`Invalid JSON in ${manifestPath}: ${(error as Error).message}`);
     }
 
-    if (!raw || typeof raw !== 'object') {
+    if (!raw || typeof raw !== "object") {
       throw new BadRequestException(`manifest.json must contain an object: ${manifestPath}`);
     }
 
@@ -62,11 +62,11 @@ export class ManifestService {
     };
 
     const header = manifest.header;
-    if (!header || typeof header.name !== 'string' || header.name.trim().length === 0) {
-      throw new BadRequestException('manifest.json is missing header.name');
+    if (!header || typeof header.name !== "string" || header.name.trim().length === 0) {
+      throw new BadRequestException("manifest.json is missing header.name");
     }
-    if (typeof header.uuid !== 'string' || !isUuid(header.uuid)) {
-      throw new BadRequestException('manifest.json header.uuid is not a valid UUID');
+    if (typeof header.uuid !== "string" || !isUuid(header.uuid)) {
+      throw new BadRequestException("manifest.json header.uuid is not a valid UUID");
     }
 
     let version: { raw: string; array: number[] };
@@ -77,13 +77,13 @@ export class ManifestService {
     }
 
     const moduleTypes = (manifest.modules ?? [])
-      .map((module) => (typeof module.type === 'string' ? module.type.toLowerCase() : ''))
+      .map((module) => (typeof module.type === "string" ? module.type.toLowerCase() : ""))
       .filter(Boolean);
 
     let detectedType: PackType | null = null;
-    if (moduleTypes.some((type) => type.startsWith('resources'))) detectedType = 'resource';
-    if (moduleTypes.includes('data') || moduleTypes.some((type) => type.startsWith('data'))) {
-      detectedType = 'behavior';
+    if (moduleTypes.some((type) => type.startsWith("resources"))) detectedType = "resource";
+    if (moduleTypes.includes("data") || moduleTypes.some((type) => type.startsWith("data"))) {
+      detectedType = "behavior";
     }
 
     if (detectedType && detectedType !== requestedType) {
@@ -94,7 +94,7 @@ export class ManifestService {
 
     const dependencies: PackDependency[] = [];
     for (const dependency of manifest.dependencies ?? []) {
-      if (typeof dependency.uuid !== 'string' || !isUuid(dependency.uuid)) continue;
+      if (typeof dependency.uuid !== "string" || !isUuid(dependency.uuid)) continue;
       let depVersion: number[] | undefined;
       try {
         depVersion = parseVersion(dependency.version).array;

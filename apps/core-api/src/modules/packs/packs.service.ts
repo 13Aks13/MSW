@@ -1,22 +1,13 @@
-import {
-  ConflictException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository } from 'typeorm';
-import { rm } from 'node:fs/promises';
-import path from 'node:path';
-import {
-  type PackDependency,
-  type PackDto,
-  type PackType,
-  type Paginated,
-} from '@mc/shared';
-import { PackEntity } from './entities/pack.entity.js';
-import { WorldPackEntity } from '../worlds/entities/world-pack.entity.js';
-import { StorageService } from '../../common/storage/storage.service.js';
-import type { ListPacksQueryDto } from './dto/list-packs.dto.js';
+import { rm } from "node:fs/promises";
+import path from "node:path";
+import type { PackDependency, PackDto, PackType, Paginated } from "@mc/shared";
+import { ConflictException, Injectable, NotFoundException } from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+import { In, type Repository } from "typeorm";
+import type { StorageService } from "../../common/storage/storage.service.js";
+import { WorldPackEntity } from "../worlds/entities/world-pack.entity.js";
+import type { ListPacksQueryDto } from "./dto/list-packs.dto.js";
+import { PackEntity } from "./entities/pack.entity.js";
 
 @Injectable()
 export class PacksService {
@@ -29,10 +20,10 @@ export class PacksService {
   ) {}
 
   async list(query: ListPacksQueryDto): Promise<Paginated<PackDto>> {
-    const builder = this.packs.createQueryBuilder('pack');
-    if (query.type) builder.andWhere('pack.type = :type', { type: query.type });
+    const builder = this.packs.createQueryBuilder("pack");
+    if (query.type) builder.andWhere("pack.type = :type", { type: query.type });
     if (query.search) {
-      builder.andWhere('(lower(pack.name) LIKE :search OR pack.packUuid::text LIKE :search)', {
+      builder.andWhere("(lower(pack.name) LIKE :search OR pack.packUuid::text LIKE :search)", {
         search: `%${query.search.toLowerCase()}%`,
       });
     }
@@ -40,7 +31,7 @@ export class PacksService {
     const page = query.page ?? 1;
     const limit = query.limit ?? 50;
     builder
-      .orderBy('pack.createdAt', 'DESC')
+      .orderBy("pack.createdAt", "DESC")
       .skip((page - 1) * limit)
       .take(limit);
 
@@ -119,14 +110,14 @@ export class PacksService {
 
   countByType(): Promise<Record<PackType, number>> {
     return this.packs
-      .createQueryBuilder('pack')
-      .select('pack.type', 'type')
-      .addSelect('count(*)', 'count')
-      .groupBy('pack.type')
+      .createQueryBuilder("pack")
+      .select("pack.type", "type")
+      .addSelect("count(*)", "count")
+      .groupBy("pack.type")
       .getRawMany<{ type: PackType; count: string }>()
       .then((rows) => ({
-        resource: Number(rows.find((row) => row.type === 'resource')?.count ?? 0),
-        behavior: Number(rows.find((row) => row.type === 'behavior')?.count ?? 0),
+        resource: Number(rows.find((row) => row.type === "resource")?.count ?? 0),
+        behavior: Number(rows.find((row) => row.type === "behavior")?.count ?? 0),
       }));
   }
 }

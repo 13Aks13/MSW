@@ -8,6 +8,7 @@
   },
   "formatter": {
     "enabled": true,
+    "formatWithErrors": true,
     "indentStyle": "space",
     "indentWidth": 2,
     "lineWidth": 100,
@@ -27,6 +28,9 @@
     }
   },
   "javascript": {
+    "parser": {
+      "unsafeParameterDecoratorsEnabled": true
+    },
     "formatter": {
       "semicolons": "always",
       "quoteStyle": "double",

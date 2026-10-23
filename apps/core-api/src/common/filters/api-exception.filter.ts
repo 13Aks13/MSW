@@ -1,3 +1,4 @@
+import type { ApiErrorBody } from "@mc/shared";
 import {
   type ArgumentsHost,
   Catch,
@@ -5,9 +6,8 @@ import {
   HttpException,
   HttpStatus,
   Logger,
-} from '@nestjs/common';
-import type { Request, Response } from 'express';
-import type { ApiErrorBody } from '@mc/shared';
+} from "@nestjs/common";
+import type { Request, Response } from "express";
 
 @Catch()
 export class ApiExceptionFilter implements ExceptionFilter {
@@ -22,10 +22,10 @@ export class ApiExceptionFilter implements ExceptionFilter {
       exception instanceof HttpException ? exception.getStatus() : HttpStatus.INTERNAL_SERVER_ERROR;
     const payload = exception instanceof HttpException ? exception.getResponse() : null;
 
-    let message: string | string[] = 'Internal server error';
-    if (typeof payload === 'string') {
+    let message: string | string[] = "Internal server error";
+    if (typeof payload === "string") {
       message = payload;
-    } else if (payload && typeof payload === 'object' && 'message' in payload) {
+    } else if (payload && typeof payload === "object" && "message" in payload) {
       message = (payload as { message: string | string[] }).message;
     } else if (exception instanceof Error && status !== HttpStatus.INTERNAL_SERVER_ERROR) {
       message = exception.message;
@@ -40,7 +40,7 @@ export class ApiExceptionFilter implements ExceptionFilter {
 
     const body: ApiErrorBody = {
       statusCode: status,
-      error: status >= 500 ? 'Internal Server Error' : (HttpStatus[status] ?? 'Error'),
+      error: status >= 500 ? "Internal Server Error" : (HttpStatus[status] ?? "Error"),
       message,
       path: request.url,
       timestamp: new Date().toISOString(),

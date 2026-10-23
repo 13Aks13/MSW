@@ -1,31 +1,26 @@
+import { cp, mkdir, rename, rm, writeFile } from "node:fs/promises";
+import path from "node:path";
+import { type Paginated, slugify, type WorldDto, type WorldStatus } from "@mc/shared";
 import {
   BadRequestException,
   ConflictException,
   Injectable,
   Logger,
   NotFoundException,
-} from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository } from 'typeorm';
-import { cp, mkdir, rename, rm, writeFile } from 'node:fs/promises';
-import path from 'node:path';
-import {
-  type Paginated,
-  type WorldDto,
-  type WorldStatus,
-  slugify,
-} from '@mc/shared';
-import { WorldEntity } from './entities/world.entity.js';
-import { WorldPackEntity } from './entities/world-pack.entity.js';
-import { PackEntity } from '../packs/entities/pack.entity.js';
-import { StorageService } from '../../common/storage/storage.service.js';
-import { ServerService } from '../server/server.service.js';
-import { dirSize, pathExists } from '../../common/utils/fs.utils.js';
-import type { CreateWorldDto, ListWorldsQueryDto } from './dto/world.dto.js';
+} from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+import { In, type Repository } from "typeorm";
+import type { StorageService } from "../../common/storage/storage.service.js";
+import { dirSize, pathExists } from "../../common/utils/fs.utils.js";
+import { PackEntity } from "../packs/entities/pack.entity.js";
+import type { ServerService } from "../server/server.service.js";
+import type { CreateWorldDto, ListWorldsQueryDto } from "./dto/world.dto.js";
+import { WorldEntity } from "./entities/world.entity.js";
+import { WorldPackEntity } from "./entities/world-pack.entity.js";
 
 const DEFAULT_PACK_FILES = {
-  resource: 'world_resource_packs.json',
-  behavior: 'world_behavior_packs.json',
+  resource: "world_resource_packs.json",
+  behavior: "world_behavior_packs.json",
 } as const;
 
 @Injectable()
@@ -45,19 +40,22 @@ export class WorldsService {
 
   async list(query: ListWorldsQueryDto): Promise<Paginated<WorldDto>> {
     const builder = this.worlds
-      .createQueryBuilder('world')
-      .leftJoinAndSelect('world.packs', 'worldPack')
-      .leftJoinAndSelect('worldPack.pack', 'pack');
+      .createQueryBuilder("world")
+      .leftJoinAndSelect("world.packs", "worldPack")
+      .leftJoinAndSelect("worldPack.pack", "pack");
 
     if (query.search) {
-      builder.andWhere('lower(world.name) LIKE :search', {
+      builder.andWhere("lower(world.name) LIKE :search", {
         search: `%${query.search.toLowerCase()}%`,
       });
     }
 
     const page = query.page ?? 1;
     const limit = query.limit ?? 50;
-    builder.orderBy('world.createdAt', 'DESC').skip((page - 1) * limit).take(limit);
+    builder
+      .orderBy("world.createdAt", "DESC")
+      .skip((page - 1) * limit)
+      .take(limit);
 
     const [items, total] = await builder.getManyAndCount();
     return {
@@ -71,10 +69,10 @@ export class WorldsService {
 
   async get(id: string): Promise<WorldEntity> {
     const world = await this.worlds
-      .createQueryBuilder('world')
-      .leftJoinAndSelect('world.packs', 'worldPack')
-      .leftJoinAndSelect('worldPack.pack', 'pack')
-      .where('world.id = :id', { id })
+      .createQueryBuilder("world")
+      .leftJoinAndSelect("world.packs", "worldPack")
+      .leftJoinAndSelect("worldPack.pack", "pack")
+      .where("world.id = :id", { id })
       .getOne();
     if (!world) throw new NotFoundException(`World ${id} not found`);
     return world;
@@ -86,7 +84,7 @@ export class WorldsService {
       throw new ConflictException(`World "${name}" already exists`);
     }
 
-    const slug = await this.uniqueSlug(slugify(name, 'world'));
+    const slug = await this.uniqueSlug(slugify(name, "world"));
     const resourceIds = [...new Set(dto.resourcePackIds ?? [])];
     const behaviorIds = [...new Set(dto.behaviorPackIds ?? [])];
     const packs = await this.loadPacks(resourceIds, behaviorIds);
@@ -102,18 +100,18 @@ export class WorldsService {
         slug,
         folderName: slug,
         seed: dto.seed ?? null,
-        gamemode: dto.gamemode ?? 'survival',
-        difficulty: dto.difficulty ?? 'normal',
-        status: 'ready',
+        gamemode: dto.gamemode ?? "survival",
+        difficulty: dto.difficulty ?? "normal",
+        status: "ready",
       });
       const saved = await this.worlds.save(world);
 
       const links = [
         ...packs.resource.map((pack) =>
-          this.worldPacks.create({ worldId: saved.id, packId: pack.id, kind: 'resource' }),
+          this.worldPacks.create({ worldId: saved.id, packId: pack.id, kind: "resource" }),
         ),
         ...packs.behavior.map((pack) =>
-          this.worldPacks.create({ worldId: saved.id, packId: pack.id, kind: 'behavior' }),
+          this.worldPacks.create({ worldId: saved.id, packId: pack.id, kind: "behavior" }),
         ),
       ];
       if (links.length > 0) await this.worldPacks.save(links);
@@ -130,7 +128,7 @@ export class WorldsService {
 
     // Re-activating the live world must never overwrite its progress with the
     // (potentially older) library copy.
-    if (world.status === 'active') {
+    if (world.status === "active") {
       try {
         await this.server.start();
       } catch (error) {
@@ -159,8 +157,8 @@ export class WorldsService {
       await rm(target, { recursive: true, force: true });
       await rename(staging, target);
 
-      await this.worlds.update({ status: 'active' }, { status: 'ready' as WorldStatus });
-      world.status = 'active';
+      await this.worlds.update({ status: "active" }, { status: "ready" as WorldStatus });
+      world.status = "active";
       await this.worlds.save(world);
     } catch (error) {
       await rm(staging, { recursive: true, force: true }).catch(() => undefined);
@@ -187,7 +185,7 @@ export class WorldsService {
    * so switching worlds or creating a backup does not lose progress.
    */
   async syncActiveWorld(): Promise<WorldEntity | null> {
-    const active = await this.worlds.findOneBy({ status: 'active' });
+    const active = await this.worlds.findOneBy({ status: "active" });
     if (!active) return null;
 
     const activeDir = this.storage.activeWorldDir();
@@ -218,11 +216,11 @@ export class WorldsService {
   async clone(id: string): Promise<WorldDto> {
     const source = await this.get(id);
     const name = await this.uniqueName(`${source.name} Copy`);
-    const slug = await this.uniqueSlug(slugify(name, 'world-copy'));
+    const slug = await this.uniqueSlug(slugify(name, "world-copy"));
     const sourceFolder = path.join(this.storage.worldsDir(), source.folderName);
     const targetFolder = path.join(this.storage.worldsDir(), slug);
 
-    const cloningActive = source.status === 'active';
+    const cloningActive = source.status === "active";
     let stopped = false;
     try {
       if (cloningActive) {
@@ -255,7 +253,7 @@ export class WorldsService {
       seed: source.seed,
       gamemode: source.gamemode,
       difficulty: source.difficulty,
-      status: 'ready',
+      status: "ready",
     });
     const saved = await this.worlds.save(clone);
 
@@ -269,8 +267,8 @@ export class WorldsService {
 
   async remove(id: string): Promise<void> {
     const world = await this.get(id);
-    if (world.status === 'active') {
-      throw new ConflictException('Cannot delete the active world; activate another world first');
+    if (world.status === "active") {
+      throw new ConflictException("Cannot delete the active world; activate another world first");
     }
     await this.worlds.delete({ id });
     await rm(path.join(this.storage.worldsDir(), world.folderName), {
@@ -282,7 +280,7 @@ export class WorldsService {
   async refreshSize(id: string): Promise<string> {
     const world = await this.get(id);
     const dir =
-      world.status === 'active'
+      world.status === "active"
         ? this.storage.activeWorldDir()
         : path.join(this.storage.worldsDir(), world.folderName);
     const size = await dirSize(dir);
@@ -305,12 +303,12 @@ export class WorldsService {
     await writeFile(
       path.join(folder, DEFAULT_PACK_FILES.resource),
       `${JSON.stringify(serialize(resource), null, 2)}\n`,
-      'utf8',
+      "utf8",
     );
     await writeFile(
       path.join(folder, DEFAULT_PACK_FILES.behavior),
       `${JSON.stringify(serialize(behavior), null, 2)}\n`,
-      'utf8',
+      "utf8",
     );
   }
 
@@ -327,7 +325,7 @@ export class WorldsService {
     const resource = resourceIds.map((id) => {
       const pack = byId.get(id);
       if (!pack) throw new BadRequestException(`Resource pack ${id} does not exist`);
-      if (pack.type !== 'resource') {
+      if (pack.type !== "resource") {
         throw new BadRequestException(`Pack "${pack.name}" is not a resource pack`);
       }
       return pack;
@@ -336,7 +334,7 @@ export class WorldsService {
     const behavior = behaviorIds.map((id) => {
       const pack = byId.get(id);
       if (!pack) throw new BadRequestException(`Behavior pack ${id} does not exist`);
-      if (pack.type !== 'behavior') {
+      if (pack.type !== "behavior") {
         throw new BadRequestException(`Pack "${pack.name}" is not a behavior pack`);
       }
       return pack;

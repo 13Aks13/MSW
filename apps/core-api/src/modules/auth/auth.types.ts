@@ -1,4 +1,4 @@
-import type { UserRole } from '@mc/shared';
+import type { UserRole } from "@mc/shared";
 
 export interface AuthUser {
   id: string;

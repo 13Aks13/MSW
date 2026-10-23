@@ -1,34 +1,34 @@
-import { Body, Controller, Get, Post, Put } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
-import type { ServerPropertyDto } from '@mc/shared';
-import { SettingsService } from './settings.service.js';
-import { ServerService } from '../server/server.service.js';
-import { Roles } from '../../common/decorators/roles.decorator.js';
+import type { ServerPropertyDto } from "@mc/shared";
+import { Body, Controller, Get, Post, Put } from "@nestjs/common";
+import { ApiBearerAuth, ApiOperation, ApiTags } from "@nestjs/swagger";
+import { Roles } from "../../common/decorators/roles.decorator.js";
+import type { ServerService } from "../server/server.service.js";
+import type { SettingsService } from "./settings.service.js";
 
-@ApiTags('settings')
+@ApiTags("settings")
 @ApiBearerAuth()
-@Controller('settings')
+@Controller("settings")
 export class SettingsController {
   constructor(
     private readonly settings: SettingsService,
     private readonly server: ServerService,
   ) {}
 
-  @Get('server-properties')
+  @Get("server-properties")
   list(): Promise<ServerPropertyDto[]> {
     return this.settings.list();
   }
 
-  @Put('server-properties')
-  @Roles('admin', 'moderator')
-  @ApiOperation({ summary: 'Update allow-listed server.properties values (restart required)' })
+  @Put("server-properties")
+  @Roles("admin", "moderator")
+  @ApiOperation({ summary: "Update allow-listed server.properties values (restart required)" })
   update(@Body() updates: Record<string, string>): Promise<ServerPropertyDto[]> {
     return this.settings.update(updates);
   }
 
-  @Post('apply')
-  @Roles('admin', 'moderator')
-  @ApiOperation({ summary: 'Restart Bedrock to apply pending settings' })
+  @Post("apply")
+  @Roles("admin", "moderator")
+  @ApiOperation({ summary: "Restart Bedrock to apply pending settings" })
   async apply(): Promise<{ restarted: true }> {
     await this.server.restart();
     return { restarted: true };

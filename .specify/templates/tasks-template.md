@@ -1,7 +1,6 @@
 ---
 
-description: "Task list template for feature implementation"
----
+## description: "Task list template for feature implementation"
 
 # Tasks: [FEATURE NAME]
 
@@ -48,7 +47,6 @@ description: "Task list template for feature implementation"
 ## Phase 1: Setup (Shared Infrastructure)
 
 **Purpose**: Project initialization and basic structure
-
 - [ ] T001 Create project structure per implementation plan
 - [ ] T002 Initialize [language] project with [framework] dependencies
 - [ ] T003 [P] Configure linting and formatting tools
@@ -62,7 +60,6 @@ description: "Task list template for feature implementation"
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
 Examples of foundational tasks (adjust based on your project):
-
 - [ ] T004 Setup database schema and migrations framework
 - [ ] T005 [P] Implement authentication/authorization framework
 - [ ] T006 [P] Setup API routing and middleware structure
@@ -83,7 +80,6 @@ Examples of foundational tasks (adjust based on your project):
 ### Tests for User Story 1 (OPTIONAL - only if tests requested) ⚠️
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
-
 - [ ] T010 [P] [US1] Contract test for [endpoint] in tests/contract/test_[name].py
 - [ ] T011 [P] [US1] Integration test for [user journey] in tests/integration/test_[name].py
 
@@ -150,7 +146,6 @@ Examples of foundational tasks (adjust based on your project):
 ## Phase N: Polish & Cross-Cutting Concerns
 
 **Purpose**: Improvements that affect multiple user stories
-
 - [ ] TXXX [P] Documentation updates in docs/
 - [ ] TXXX Code cleanup and refactoring
 - [ ] TXXX Performance optimization across all stories
@@ -231,7 +226,6 @@ Task: "Create [Entity2] model in src/models/[entity2].py"
 ### Parallel Team Strategy
 
 With multiple developers:
-
 1. Team completes Setup + Foundational together
 2. Once Foundational is done:
    - Developer A: User Story 1

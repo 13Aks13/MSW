@@ -28,6 +28,10 @@ logs/
 .idea/
 .vscode/
 
+# AI / spec tooling (not part of the shipped product)
+.opencode/
+.specify/
+
 # test output
 test-results/
 playwright-report/

@@ -1,8 +1,8 @@
-import { Logger } from '@nestjs/common';
-import { readdir, stat } from 'node:fs/promises';
-import path from 'node:path';
+import { readdir, stat } from "node:fs/promises";
+import path from "node:path";
+import { Logger } from "@nestjs/common";
 
-const logger = new Logger('fs-utils');
+const logger = new Logger("fs-utils");
 
 export async function dirSize(dir: string): Promise<number> {
   let total = 0;

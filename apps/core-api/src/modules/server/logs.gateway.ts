@@ -1,21 +1,21 @@
-import { Logger } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
+import { SOCKET_EVENTS } from "@mc/shared";
+import { Logger } from "@nestjs/common";
+import type { JwtService } from "@nestjs/jwt";
 import {
   type OnGatewayConnection,
   type OnGatewayDisconnect,
   WebSocketGateway,
-} from '@nestjs/websockets';
-import type { Socket } from 'socket.io';
-import { SOCKET_EVENTS } from '@mc/shared';
-import { ServerService } from './server.service.js';
-import type { JwtPayload } from '../auth/auth.types.js';
+} from "@nestjs/websockets";
+import type { Socket } from "socket.io";
+import type { JwtPayload } from "../auth/auth.types.js";
+import type { ServerService } from "./server.service.js";
 
 interface LogSocketData {
   stopStream?: () => void;
 }
 
 @WebSocketGateway({
-  namespace: '/logs',
+  namespace: "/logs",
   cors: { origin: true, credentials: true },
 })
 export class LogsGateway implements OnGatewayConnection, OnGatewayDisconnect {
@@ -29,7 +29,7 @@ export class LogsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   async handleConnection(client: Socket): Promise<void> {
     const token = this.extractToken(client);
     if (!token) {
-      client.emit(SOCKET_EVENTS.logError, { message: 'Authentication token is required' });
+      client.emit(SOCKET_EVENTS.logError, { message: "Authentication token is required" });
       client.disconnect(true);
       return;
     }
@@ -37,7 +37,7 @@ export class LogsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     try {
       await this.jwtService.verifyAsync<JwtPayload>(token);
     } catch {
-      client.emit(SOCKET_EVENTS.logError, { message: 'Invalid or expired token' });
+      client.emit(SOCKET_EVENTS.logError, { message: "Invalid or expired token" });
       client.disconnect(true);
       return;
     }
@@ -60,14 +60,14 @@ export class LogsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   private extractToken(client: Socket): string | null {
     const authToken = client.handshake.auth?.token;
-    if (typeof authToken === 'string' && authToken.length > 0) return authToken;
+    if (typeof authToken === "string" && authToken.length > 0) return authToken;
 
     const header = client.handshake.headers.authorization;
-    if (typeof header === 'string' && header.startsWith('Bearer ')) {
-      return header.slice('Bearer '.length);
+    if (typeof header === "string" && header.startsWith("Bearer ")) {
+      return header.slice("Bearer ".length);
     }
 
     const queryToken = client.handshake.query?.token;
-    return typeof queryToken === 'string' ? queryToken : null;
+    return typeof queryToken === "string" ? queryToken : null;
   }
 }

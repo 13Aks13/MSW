@@ -9,7 +9,6 @@ Version: 1.0
 Develop a web-based administration platform for Minecraft Bedrock Server running in Docker.
 
 The platform must provide centralized management of:
-
 - Minecraft Bedrock Server lifecycle
 - Resource Packs
 - Behavior Packs
@@ -222,6 +221,7 @@ resour*e_packs*rpg.zip
 ---
 
 ## Behavior Bund*e*
+
 Supported file pattern:
 
 ```text
@@ -297,7 +297,7 @@ Minimum valid structure:
   "header": {
     "name": "Pack Name",
     "uuid": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
-    "version": [1,0,0]
+    "version": [1, 0, 0]
   }
 }
 ```
@@ -409,7 +409,7 @@ For every pack:
   "id": "uuid",
   "name": "Magic Mobs",
   "minecraftUuid": "pack uuid",
-  "version": [1,0,0],
+  "version": [1, 0, 0],
   "type": "behavior",
   "path": "/behavior_packs/MagicMobs",
   "uploadedAt": "timestamp"
@@ -575,7 +575,6 @@ Example:
 ---
 
 System should automatically:
-
 - discover referenced packs;
 - warn user if dependency is missing;
 - suggest required packs.
@@ -631,7 +630,7 @@ Example:
 [
   {
     "pack_id": "uuid",
-    "version": [1,0,0]
+    "version": [1, 0, 0]
   }
 ]
 ```
@@ -652,7 +651,7 @@ Example:
 [
   {
     "pack_id": "uuid",
-    "version": [1,0,0]
+    "version": [1, 0, 0]
   }
 ]
 ```
@@ -752,7 +751,6 @@ WebSocket
 Live Console
 
 Features:
-
 - auto-scroll
 - filtering
 - search
@@ -797,7 +795,6 @@ POST /api/backups/restore
 ---
 
 Workflow:
-
 1. Stop server.
 2. Unpack archive.
 3. Restore files.
@@ -810,7 +807,6 @@ Workflow:
 ## Dashboard
 
 Display:
-
 - online status
 - uptime
 - memory usage
@@ -823,7 +819,6 @@ Display:
 ## Resource Packs
 
 Functions:
-
 - upload bundle
 - list packs
 - search
@@ -834,7 +829,6 @@ Functions:
 ## Behavior Packs
 
 Functions:
-
 - upload bundle
 - list packs
 - search
@@ -845,7 +839,6 @@ Functions:
 ## Worlds
 
 Functions:
-
 - create world
 - delete world
 - clone world
@@ -889,7 +882,6 @@ bcrypt
 ## Upload Validation
 
 Validate:
-
 - file extension
 - file size
 - mime type
@@ -933,7 +925,6 @@ for normal operations.
 # Monitoring
 
 Metrics:
-
 - CPU
 - RAM
 - Storage
@@ -1006,7 +997,6 @@ Minecraft version checks.
 # Acceptance Criteria
 
 The implementation is considered complete when:
-
 - ZIP bundle uploads work.
 - Packs are automatically detected.
 - Packs are registered in the database.
