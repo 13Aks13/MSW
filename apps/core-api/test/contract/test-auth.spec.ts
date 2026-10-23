@@ -7,6 +7,8 @@ describe("Auth (Contract)", () => {
   let app: INestApplication;
 
   beforeAll(async () => {
+    app = await createTestApp();
+  });
     const module: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     }).compile();
