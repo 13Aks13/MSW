@@ -30,7 +30,6 @@ logs/
 
 # AI / spec tooling (not part of the shipped product)
 .opencode/
-.specify/
 
 # test output
 test-results/
