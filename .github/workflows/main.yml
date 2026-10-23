@@ -20,7 +20,7 @@ jobs:
       - name: Run AI Code Review
         uses: KonstZiv/ai-code-reviewer@v1
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.BOT_PAT }}
           google_api_key: ${{ secrets.GEMINI_API_KEY }}
           llm_provider: gemini
           gemini_model: gemini-2.0-flash
