@@ -1,0 +1,61 @@
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import bcrypt from 'bcryptjs';
+import { UserEntity } from './entities/user.entity.js';
+
+const BCRYPT_ROUNDS = 12;
+
+@Injectable()
+export class UsersService implements OnModuleInit {
+  private readonly logger = new Logger(UsersService.name);
+
+  constructor(
+    @InjectRepository(UserEntity)
+    private readonly users: Repository<UserEntity>,
+    private readonly config: ConfigService,
+  ) {}
+
+  async onModuleInit(): Promise<void> {
+    const count = await this.users.count();
+    if (count > 0) return;
+
+    const email = this.config.get<string>('ADMIN_EMAIL', 'admin@example.com').toLowerCase();
+    const password = this.config.get<string>('ADMIN_PASSWORD', 'ChangeMe123!');
+    const user = this.users.create({
+      email,
+      passwordHash: await bcrypt.hash(password, BCRYPT_ROUNDS),
+      role: 'admin',
+      isActive: true,
+    });
+    await this.users.save(user);
+    this.logger.warn(
+      `Created initial admin account "${email}". Change ADMIN_PASSWORD and rotate it after first login.`,
+    );
+  }
+
+  findByEmailWithPassword(email: string): Promise<UserEntity | null> {
+    return this.users
+      .createQueryBuilder('user')
+      .addSelect('user.passwordHash')
+      .where('lower(user.email) = lower(:email)', { email })
+      .getOne();
+  }
+
+  findById(id: string): Promise<UserEntity | null> {
+    return this.users.findOneBy({ id });
+  }
+
+  verifyPassword(plain: string, hash: string): Promise<boolean> {
+    return bcrypt.compare(plain, hash);
+  }
+
+  async markLogin(id: string): Promise<void> {
+    await this.users.update({ id }, { lastLoginAt: new Date() });
+  }
+
+  async setPassword(id: string, plain: string): Promise<void> {
+    await this.users.update({ id }, { passwordHash: await bcrypt.hash(plain, BCRYPT_ROUNDS) });
+  }
+}

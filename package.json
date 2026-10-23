@@ -1,0 +1,45 @@
+{
+  "name": "minecraft-platform",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Minecraft Bedrock management platform (pnpm monorepo)",
+  "license": "UNLICENSED",
+  "packageManager": "pnpm@12.14.0",
+  "engines": {
+    "node": ">=24.11.0",
+    "pnpm": ">=10"
+  },
+  "scripts": {
+    "dev": "pnpm --parallel --filter @mc/core-api --filter @mc/web-api dev",
+    "dev:api": "pnpm --filter @mc/core-api start:dev",
+    "dev:web": "pnpm --filter @mc/web-api dev",
+    "build": "pnpm -r build",
+    "typecheck": "pnpm -r typecheck",
+    "lint": "pnpm -r lint",
+    "test": "pnpm -r test",
+    "format": "biome check --write .",
+    "format:check": "biome check .",
+    "db:migrate": "pnpm --filter @mc/core-api db:migrate",
+    "db:revert": "pnpm --filter @mc/core-api db:revert",
+    "compose:up": "docker compose up -d --build",
+    "compose:down": "docker compose down",
+    "compose:logs": "docker compose logs -f --tail=200",
+    "prepare": "husky",
+    "release": "semantic-release"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.1.2",
+    "@commitlint/cli": "^19.8.0",
+    "@commitlint/config-conventional": "^19.8.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^15.5.0",
+    "semantic-release": "^24.2.3",
+    "typescript": "^6.0.2",
+    "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/commit-analyzer": "^13.0.1",
+    "@semantic-release/git": "^10.0.1",
+    "@semantic-release/github": "^11.0.1",
+    "@semantic-release/npm": "^12.0.1",
+    "@semantic-release/release-notes-generator": "^14.0.3"
+  }
+}

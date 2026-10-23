@@ -1,0 +1,66 @@
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseUUIDPipe,
+  Post,
+  Query,
+} from '@nestjs/common';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import type { Paginated, WorldDto } from '@mc/shared';
+import { WorldsService } from './worlds.service.js';
+import { CreateWorldDto, ListWorldsQueryDto } from './dto/world.dto.js';
+import { Roles } from '../../common/decorators/roles.decorator.js';
+
+@ApiTags('worlds')
+@ApiBearerAuth()
+@Controller('worlds')
+export class WorldsController {
+  constructor(private readonly worlds: WorldsService) {}
+
+  @Get()
+  @ApiOperation({ summary: 'List worlds in the library' })
+  list(@Query() query: ListWorldsQueryDto): Promise<Paginated<WorldDto>> {
+    return this.worlds.list(query);
+  }
+
+  @Get(':id')
+  get(@Param('id', ParseUUIDPipe) id: string): Promise<WorldDto> {
+    return this.worlds.get(id).then((world) => this.worlds.toDto(world));
+  }
+
+  @Post()
+  @Roles('admin', 'moderator')
+  @ApiOperation({ summary: 'Create a world and generate pack configuration files' })
+  create(@Body() dto: CreateWorldDto): Promise<WorldDto> {
+    return this.worlds.create(dto);
+  }
+
+  @Post(':id/activate')
+  @Roles('admin', 'moderator')
+  @ApiOperation({ summary: 'Copy the world into the Bedrock data volume and start the server' })
+  activate(@Param('id', ParseUUIDPipe) id: string): Promise<WorldDto> {
+    return this.worlds.activate(id);
+  }
+
+  @Post(':id/clone')
+  @Roles('admin', 'moderator')
+  clone(@Param('id', ParseUUIDPipe) id: string): Promise<WorldDto> {
+    return this.worlds.clone(id);
+  }
+
+  @Post(':id/refresh-size')
+  @Roles('admin', 'moderator')
+  async refreshSize(@Param('id', ParseUUIDPipe) id: string): Promise<{ sizeBytes: string }> {
+    return { sizeBytes: await this.worlds.refreshSize(id) };
+  }
+
+  @Delete(':id')
+  @Roles('admin', 'moderator')
+  async remove(@Param('id', ParseUUIDPipe) id: string): Promise<{ deleted: true }> {
+    await this.worlds.remove(id);
+    return { deleted: true };
+  }
+}

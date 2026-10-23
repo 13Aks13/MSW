@@ -1,0 +1,10 @@
+{
+  "*.{ts,tsx,js,jsx,mjs,cjs}": [
+    "biome check --write",
+    "git add"
+  ],
+  "*.{json,md,yml,yaml}": [
+    "biome check --write",
+    "git add"
+  ]
+}

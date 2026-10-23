@@ -1,0 +1,163 @@
+name: minecraft-platform
+
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: '10m'
+    max-file: '3'
+
+services:
+  traefik:
+    image: traefik:v3.7
+    container_name: mc-traefik
+    command:
+      - --api.dashboard=true
+      - --api.insecure=true
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      - --providers.docker.network=minecraft-proxy
+      - --entrypoints.web.address=:80
+      - --entrypoints.websecure.address=:443
+      - --log.level=INFO
+      - --accesslog=true
+    ports:
+      - '${TRAEFIK_HTTP_PORT:-80}:80'
+      - '${TRAEFIK_HTTPS_PORT:-443}:443'
+      - '${TRAEFIK_DASHBOARD_PORT:-8090}:8080'
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - proxy
+    labels:
+      traefik.enable: 'true'
+      traefik.http.routers.traefik-dashboard.rule: Host(`traefik.localhost`)
+      traefik.http.routers.traefik-dashboard.entrypoints: web
+      traefik.http.routers.traefik-dashboard.service: api@internal
+    restart: unless-stopped
+    logging: *default-logging
+
+  postgres:
+    image: postgres:17-alpine
+    container_name: mc-postgres
+    environment:
+      POSTGRES_DB: ${DB_NAME:-mc_platform}
+      POSTGRES_USER: ${DB_USER:-mc}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - internal
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${DB_USER:-mc} -d ${DB_NAME:-mc_platform}']
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+    restart: unless-stopped
+    logging: *default-logging
+
+  core-api:
+    build:
+      context: .
+      dockerfile: apps/core-api/Dockerfile
+    container_name: mc-platform-api
+    env_file:
+      - .env
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      STORAGE_ROOT: /storage
+      DATA_ROOT: /data
+      BEDROCK_CONTAINER: mc-bedrock
+      BEDROCK_LEVEL_NAME: active
+      DOCKER_SOCKET: /var/run/docker.sock
+    volumes:
+      - ./storage:/storage
+      - ./data:/data
+      - /var/run/docker.sock:/var/run/docker.sock
+    group_add:
+      - '${DOCKER_GID:-0}'
+    networks:
+      - proxy
+      - internal
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://127.0.0.1:3000/api/v1/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    labels:
+      traefik.enable: 'true'
+      traefik.docker.network: minecraft-proxy
+      traefik.http.routers.mc-api.rule: Host(`${APP_HOST:-app.localhost}`) && (PathPrefix(`/api`) || PathPrefix(`/socket.io`))
+      traefik.http.routers.mc-api.entrypoints: web
+      traefik.http.routers.mc-api.priority: '100'
+      traefik.http.services.mc-api.loadbalancer.server.port: '3000'
+    restart: unless-stopped
+    logging: *default-logging
+
+  web-api:
+    build:
+      context: .
+      dockerfile: apps/web-api/Dockerfile
+    container_name: mc-platform-web
+    networks:
+      - proxy
+    depends_on:
+      core-api:
+        condition: service_healthy
+    labels:
+      traefik.enable: 'true'
+      traefik.docker.network: minecraft-proxy
+      traefik.http.routers.mc-web.rule: Host(`${APP_HOST:-app.localhost}`) || Host(`localhost`)
+      traefik.http.routers.mc-web.entrypoints: web
+      traefik.http.routers.mc-web.priority: '10'
+      traefik.http.services.mc-web.loadbalancer.server.port: '80'
+    restart: unless-stopped
+    logging: *default-logging
+
+  bedrock-server:
+    image: itzg/minecraft-bedrock-server
+    container_name: mc-bedrock
+    environment:
+      EULA: 'TRUE'
+      LEVEL_NAME: active
+      # Keep the server on the same uid/gid as core-api so both containers can
+      # read/write worlds and downloaded packs without permission conflicts.
+      UID: '1000'
+      GID: '1000'
+      # Server name, gamemode, difficulty, max players and similar values are
+      # managed through the Settings page (server.properties). Environment
+      # variables here would overwrite them on every start.
+    ports:
+      - '19132:19132/udp'
+      - '19133:19133/udp'
+    volumes:
+      - ./data:/data
+      - ./storage/resource_packs:/data/resource_packs
+      - ./storage/behavior_packs:/data/behavior_packs
+    networks:
+      - backend
+    stdin_open: true
+    tty: false
+    restart: unless-stopped
+    logging: *default-logging
+
+networks:
+  proxy:
+    name: minecraft-proxy
+  internal:
+    name: minecraft-internal
+  backend:
+    name: minecraft-backend
+
+volumes:
+  pgdata:
+    name: minecraft-pgdata

@@ -1,0 +1,33 @@
+# dependencies
+node_modules/
+.pnpm-store/
+
+# builds
+dist/
+build/
+coverage/
+*.tsbuildinfo
+
+# env & secrets
+.env
+.env.*
+!.env.example
+
+# runtime data
+data/
+storage/*
+!storage/.gitkeep
+!storage/*/.gitkeep
+
+# logs
+logs/
+*.log
+
+# editors / OS
+.DS_Store
+.idea/
+.vscode/
+
+# test output
+test-results/
+playwright-report/
