@@ -24,3 +24,5 @@ jobs:
           google_api_key: ${{ secrets.GEMINI_API_KEY }}
           llm_provider: gemini
           gemini_model: gemini-2.5-flash
+          llm_fallback_provider: gemini
+          mistral_api_key: "placeholder_key_12345"
