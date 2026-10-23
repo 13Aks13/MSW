@@ -25,4 +25,4 @@ jobs:
           llm_provider: gemini
           gemini_model: gemini-2.5-flash
           llm_fallback_provider: gemini
-          mistral_api_key: "placeholder_key_12345"
+mistral_api_key: ${{ secrets.MISTRAL_API_KEY }}
