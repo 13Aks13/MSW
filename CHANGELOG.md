@@ -1,3 +1,21 @@
+# [1.10.0](https://github.com/13Aks13/MinecraftSWP/compare/1.9.0...1.10.0) (2026-10-24)
+
+### Features
+
+- **api:** improve UI and setting for world ([#20](https://github.com/13Aks13/MinecraftSWP/issues/20)) ([9bb7c8f](https://github.com/13Aks13/MinecraftSWP/commit/9bb7c8f4829465e4f81dcbc2daa8fc5a0327e959))
+
+# [1.9.0](https://github.com/13Aks13/MinecraftSWP/compare/1.8.0...1.9.0) (2026-10-24)
+
+### Features
+
+- **api:** improve UI and setting for world ([#19](https://github.com/13Aks13/MinecraftSWP/issues/19)) ([c597f1b](https://github.com/13Aks13/MinecraftSWP/commit/c597f1b84b6980ebc5b4c2e0b2b4488c4ecdfbd2))
+
+# [1.8.0](https://github.com/13Aks13/MinecraftSWP/compare/1.7.0...1.8.0) (2026-10-24)
+
+### Features
+
+- **api:** upload packs ([#18](https://github.com/13Aks13/MinecraftSWP/issues/18)) ([043989e](https://github.com/13Aks13/MinecraftSWP/commit/043989e908f91e7ace6b55d8942f44fbe1bd5a87))
+
 # [1.7.0](https://github.com/13Aks13/MinecraftSWP/compare/1.6.1...1.7.0) (2026-10-24)
 
 ### Features
