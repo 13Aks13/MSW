@@ -1,14 +1,14 @@
 import type { LoginResponseDto } from "@mc/shared";
-import { Injectable, UnauthorizedException } from "@nestjs/common";
-import type { JwtService } from "@nestjs/jwt";
-import type { UsersService } from "../users/users.service.js";
+import { Inject, Injectable, UnauthorizedException } from "@nestjs/common";
+import { JwtService } from "@nestjs/jwt";
+import { UsersService } from "../users/users.service.js";
 import type { LoginDto } from "./dto/login.dto.js";
 
 @Injectable()
 export class AuthService {
   constructor(
-    private readonly usersService: UsersService,
-    private readonly jwtService: JwtService,
+    @Inject(UsersService) private readonly usersService: UsersService,
+    @Inject(JwtService) private readonly jwtService: JwtService,
   ) {}
 
   async login(dto: LoginDto): Promise<LoginResponseDto> {

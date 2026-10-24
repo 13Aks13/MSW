@@ -59,6 +59,7 @@ export interface ImportReport {
   durationMs: number;
   bundleType: PackType;
   duplicatePolicy: DuplicatePolicy;
+  logs: string[];
 }
 
 export interface WorldPackDto {

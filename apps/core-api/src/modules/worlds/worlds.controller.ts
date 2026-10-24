@@ -1,15 +1,25 @@
 import type { Paginated, WorldDto } from "@mc/shared";
-import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Post, Query } from "@nestjs/common";
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Inject,
+  Param,
+  ParseUUIDPipe,
+  Post,
+  Query,
+} from "@nestjs/common";
 import { ApiBearerAuth, ApiOperation, ApiTags } from "@nestjs/swagger";
 import { Roles } from "../../common/decorators/roles.decorator.js";
-import type { CreateWorldDto, ListWorldsQueryDto } from "./dto/world.dto.js";
-import type { WorldsService } from "./worlds.service.js";
+import { CreateWorldDto, ListWorldsQueryDto } from "./dto/world.dto.js";
+import { WorldsService } from "./worlds.service.js";
 
 @ApiTags("worlds")
 @ApiBearerAuth()
 @Controller("worlds")
 export class WorldsController {
-  constructor(private readonly worlds: WorldsService) {}
+  constructor(@Inject(WorldsService) private readonly worlds: WorldsService) {}
 
   @Get()
   @ApiOperation({ summary: "List worlds in the library" })

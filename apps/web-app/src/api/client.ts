@@ -49,7 +49,9 @@ export async function uploadWithProgress(
     timeout: UPLOAD_TIMEOUT_MS,
     onUploadProgress: (event) => {
       if (!onProgress || !event.total) return;
-      onProgress(Math.round((event.loaded / event.total) * 100));
+      // Keep a small gap so the bar does not claim completion while the
+      // server is still extracting/installing the bundle.
+      onProgress(Math.min(95, Math.round((event.loaded / event.total) * 100)));
     },
   });
 }

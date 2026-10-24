@@ -12,8 +12,8 @@ export interface ExtractionLimits {
 }
 
 export const DEFAULT_ZIP_LIMITS: ExtractionLimits = {
-  maxEntries: 20_000,
-  maxUncompressedBytes: 2 * 1024 * 1024 * 1024,
+  maxEntries: 200_000,
+  maxUncompressedBytes: 4 * 1024 * 1024 * 1024,
   maxDepth: 16,
 };
 

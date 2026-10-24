@@ -10,7 +10,6 @@ FROM base AS deps
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
 COPY packages/shared/package.json packages/shared/
 COPY apps/core-api/package.json apps/core-api/
-COPY apps/web-api/package.json apps/web-api/
 RUN pnpm install --frozen-lockfile --ignore-scripts
 
 FROM deps AS build

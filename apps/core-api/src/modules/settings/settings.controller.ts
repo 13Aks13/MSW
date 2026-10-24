@@ -1,17 +1,17 @@
 import type { ServerPropertyDto } from "@mc/shared";
-import { Body, Controller, Get, Post, Put } from "@nestjs/common";
+import { Body, Controller, Get, Inject, Post, Put } from "@nestjs/common";
 import { ApiBearerAuth, ApiOperation, ApiTags } from "@nestjs/swagger";
 import { Roles } from "../../common/decorators/roles.decorator.js";
-import type { ServerService } from "../server/server.service.js";
-import type { SettingsService } from "./settings.service.js";
+import { ServerService } from "../server/server.service.js";
+import { SettingsService } from "./settings.service.js";
 
 @ApiTags("settings")
 @ApiBearerAuth()
 @Controller("settings")
 export class SettingsController {
   constructor(
-    private readonly settings: SettingsService,
-    private readonly server: ServerService,
+    @Inject(SettingsService) private readonly settings: SettingsService,
+    @Inject(ServerService) private readonly server: ServerService,
   ) {}
 
   @Get("server-properties")

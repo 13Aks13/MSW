@@ -22,6 +22,8 @@ const ALLOWED_MIME_TYPES = new Set([
   "application/octet-stream",
 ]);
 
+const ALLOWED_EXTENSIONS = new Set([".zip", ".mcaddon", ".mcpack"]);
+
 export function buildUploadOptions(): MulterOptions {
   return {
     dest: resolveUploadDir(),
@@ -32,8 +34,11 @@ export function buildUploadOptions(): MulterOptions {
     fileFilter: (_request, file, callback) => {
       const extension = path.extname(file.originalname).toLowerCase();
       const mimeAllowed = ALLOWED_MIME_TYPES.has(file.mimetype);
-      if (extension !== ".zip") {
-        callback(new BadRequestException("Only .zip bundles are accepted"), false);
+      if (!ALLOWED_EXTENSIONS.has(extension)) {
+        callback(
+          new BadRequestException("Only .zip, .mcaddon and .mcpack bundles are accepted"),
+          false,
+        );
         return;
       }
       if (!mimeAllowed) {

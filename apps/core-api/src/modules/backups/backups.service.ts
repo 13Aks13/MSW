@@ -5,22 +5,23 @@ import { type BackupDto, formatBytes, type Paginated, slugify } from "@mc/shared
 import {
   BadRequestException,
   ConflictException,
+  Inject,
   Injectable,
   Logger,
   NotFoundException,
   type OnModuleInit,
 } from "@nestjs/common";
-import type { ConfigService } from "@nestjs/config";
+import { ConfigService } from "@nestjs/config";
 import { InjectRepository } from "@nestjs/typeorm";
 import { c as createTar, x as extractTar } from "tar";
 import type { Repository } from "typeorm";
-import type { StorageService } from "../../common/storage/storage.service.js";
+import { StorageService } from "../../common/storage/storage.service.js";
 import { dirSize, pathExists } from "../../common/utils/fs.utils.js";
 import { envFlag } from "../../config/env.js";
 import type { ListPacksQueryDto } from "../packs/dto/list-packs.dto.js";
-import type { ServerService } from "../server/server.service.js";
+import { ServerService } from "../server/server.service.js";
 import { WorldEntity } from "../worlds/entities/world.entity.js";
-import type { WorldsService } from "../worlds/worlds.service.js";
+import { WorldsService } from "../worlds/worlds.service.js";
 import { BackupEntity } from "./entities/backup.entity.js";
 
 @Injectable()
@@ -33,10 +34,10 @@ export class BackupsService implements OnModuleInit {
     private readonly backups: Repository<BackupEntity>,
     @InjectRepository(WorldEntity)
     private readonly worlds: Repository<WorldEntity>,
-    private readonly storage: StorageService,
-    private readonly server: ServerService,
-    private readonly worldsService: WorldsService,
-    config: ConfigService,
+    @Inject(StorageService) private readonly storage: StorageService,
+    @Inject(ServerService) private readonly server: ServerService,
+    @Inject(WorldsService) private readonly worldsService: WorldsService,
+    @Inject(ConfigService) config: ConfigService,
   ) {
     this.gracefulStop = envFlag(config.get<string>("BACKUP_GRACEFUL_STOP"), true);
   }

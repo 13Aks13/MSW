@@ -22,6 +22,7 @@
         "noForEach": "off"
       },
       "style": {
+        "useImportType": "off",
         "noParameterAssign": "warn",
         "useBlockStatements": "warn"
       }

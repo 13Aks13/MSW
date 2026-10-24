@@ -1,8 +1,8 @@
 import { Readable, Writable } from "node:stream";
 import { finished } from "node:stream/promises";
 import type { LogLineDto, ServerStatsDto, ServerStatusDto } from "@mc/shared";
-import { Injectable, Logger, type OnModuleDestroy } from "@nestjs/common";
-import type { ConfigService } from "@nestjs/config";
+import { Inject, Injectable, Logger, type OnModuleDestroy } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
 import Docker from "dockerode";
 
 const CONTAINER_NOT_FOUND = 404;
@@ -16,7 +16,7 @@ export class DockerService implements OnModuleDestroy {
   private readonly docker: Docker;
   readonly containerName: string;
 
-  constructor(private readonly config: ConfigService) {
+  constructor(@Inject(ConfigService) private readonly config: ConfigService) {
     this.containerName = config.get<string>("BEDROCK_CONTAINER", "mc-bedrock");
     const socketPath = config.get<string>("DOCKER_SOCKET", "/var/run/docker.sock");
     this.docker = new Docker({ socketPath });

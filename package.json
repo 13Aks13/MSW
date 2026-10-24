@@ -1,6 +1,6 @@
 {
   "name": "minecraft-platform",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "private": true,
   "description": "Minecraft Bedrock management platform (pnpm monorepo)",
   "license": "UNLICENSED",
@@ -22,9 +22,9 @@
     "format:check": "biome check .",
     "db:migrate": "pnpm --filter @mc/core-api db:migrate",
     "db:revert": "pnpm --filter @mc/core-api db:revert",
-    "compose:up": "docker compose up -d --build",
-    "compose:down": "docker compose down",
-    "compose:logs": "docker compose logs -f --tail=200",
+    "compose:up": "docker compose -f infra/docker-compose.yml --env-file .env up -d --build",
+    "compose:down": "docker compose -f infra/docker-compose.yml --env-file .env down",
+    "compose:logs": "docker compose -f infra/docker-compose.yml --env-file .env logs -f --tail=200",
     "prepare": "husky",
     "release": "semantic-release"
   },

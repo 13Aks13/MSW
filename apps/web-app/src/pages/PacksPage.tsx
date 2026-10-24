@@ -74,7 +74,11 @@ export default function PacksPage() {
     },
     onError: (error) => {
       setProgress(null);
-      message.error(errorMessage(error));
+      modal.error({
+        title: "Import failed",
+        content: errorMessage(error),
+        okText: "Close",
+      });
     },
   });
 
@@ -196,7 +200,7 @@ export default function PacksPage() {
           />
           {canUpload && (
             <Upload
-              accept=".zip"
+              accept=".zip,.mcaddon,.mcpack"
               showUploadList={false}
               customRequest={({ file, onSuccess, onError }) => {
                 upload.mutate(file as File, {
@@ -216,7 +220,7 @@ export default function PacksPage() {
       {canUpload && (
         <Card style={{ marginBottom: 16 }}>
           <Upload.Dragger
-            accept=".zip"
+            accept=".zip,.mcaddon,.mcpack"
             multiple={false}
             showUploadList={false}
             disabled={upload.isPending}
@@ -239,7 +243,12 @@ export default function PacksPage() {
             </p>
           </Upload.Dragger>
           {progress !== null && (
-            <Progress percent={progress} status="active" style={{ marginTop: 12 }} />
+            <div style={{ marginTop: 12 }}>
+              <Progress percent={progress} status="active" />
+              <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+                Uploading and installing bundle… {progress}%
+              </Typography.Text>
+            </div>
           )}
         </Card>
       )}
@@ -329,6 +338,18 @@ export default function PacksPage() {
                   </ul>
                 }
               />
+            )}
+            {report.logs?.length > 0 && (
+              <div>
+                <Typography.Text strong>Logs</Typography.Text>
+                <div className="log-console" style={{ maxHeight: 220, marginTop: 8, fontSize: 12 }}>
+                  {report.logs.map((line) => (
+                    <div key={line} className="log-line">
+                      {line}
+                    </div>
+                  ))}
+                </div>
+              </div>
             )}
           </Space>
         )}

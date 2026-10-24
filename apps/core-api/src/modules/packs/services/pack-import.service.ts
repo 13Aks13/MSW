@@ -12,18 +12,19 @@ import {
 import {
   BadRequestException,
   ConflictException,
+  Inject,
   Injectable,
   Logger,
   NotFoundException,
 } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { In, type Repository } from "typeorm";
-import type { StorageService } from "../../../common/storage/storage.service.js";
+import { StorageService } from "../../../common/storage/storage.service.js";
 import { dirSize } from "../../../common/utils/fs.utils.js";
 import { PackEntity } from "../entities/pack.entity.js";
-import type { PacksService } from "../packs.service.js";
-import type { ManifestService } from "./manifest.service.js";
-import type { ZipExtractorService } from "./zip-extractor.service.js";
+import { PacksService } from "../packs.service.js";
+import { ManifestService } from "./manifest.service.js";
+import { ZipExtractorService } from "./zip-extractor.service.js";
 
 @Injectable()
 export class PackImportService {
@@ -32,10 +33,10 @@ export class PackImportService {
   constructor(
     @InjectRepository(PackEntity)
     private readonly packs: Repository<PackEntity>,
-    private readonly packsService: PacksService,
-    private readonly manifests: ManifestService,
-    private readonly zip: ZipExtractorService,
-    private readonly storage: StorageService,
+    @Inject(PacksService) private readonly packsService: PacksService,
+    @Inject(ManifestService) private readonly manifests: ManifestService,
+    @Inject(ZipExtractorService) private readonly zip: ZipExtractorService,
+    @Inject(StorageService) private readonly storage: StorageService,
   ) {}
 
   async importBundle(
@@ -53,12 +54,19 @@ export class PackImportService {
     const imported: PackDto[] = [];
     const skipped: string[] = [];
     const replaced: string[] = [];
+    const logs: string[] = [];
+    const log = (message: string) => {
+      logs.push(message);
+      this.logger.log(message);
+    };
 
     try {
       await mkdir(extractedDir, { recursive: true });
+      log(`Received ${file.originalname} (${file.size} bytes); extracting archive...`);
       await this.zip.extract(file.path, extractedDir);
 
       const manifestPaths = await this.manifests.findManifests(extractedDir);
+      log(`Extracted archive; found ${manifestPaths.length} manifest(s).`);
       if (manifestPaths.length === 0) {
         throw new BadRequestException(
           "No manifest.json found inside the ZIP archive. Expected pack folders with manifest.json.",
@@ -66,7 +74,9 @@ export class PackImportService {
       }
 
       for (const manifestPath of manifestPaths) {
+        log(`Processing manifest: ${path.relative(extractedDir, manifestPath)}`);
         const parsed = await this.manifests.parse(manifestPath, type);
+        const packType = parsed.type ?? type;
         if (!parsed.type) {
           warnings.push({
             level: "warning",
@@ -74,17 +84,28 @@ export class PackImportService {
             message:
               "No modules[] declared in manifest.json; pack type was taken from the endpoint.",
           });
+        } else if (parsed.type !== type) {
+          warnings.push({
+            level: "warning",
+            pack: parsed.name,
+            message: `Detected as ${parsed.type} pack; imported into ${parsed.type} packs.`,
+          });
         }
 
         const existing = await this.packs.findOneBy({ packUuid: parsed.uuid });
         if (existing && policy === "skip") {
           skipped.push(parsed.name);
+          log(`Skipped existing pack: ${parsed.name}`);
           continue;
         }
 
-        const folderName = existing?.folderName ?? (await this.uniqueFolderName(parsed.name, type));
-        const finalDir = path.join(this.storage.packsDir(type), folderName);
-        const stagingDir = path.join(this.storage.packsDir(type), `.staging-${randomUUID()}`);
+        const typeChanged = !!existing && existing.type !== packType;
+        const folderName =
+          existing && !typeChanged
+            ? existing.folderName
+            : await this.uniqueFolderName(parsed.name, packType);
+        const finalDir = path.join(this.storage.packsDir(packType), folderName);
+        const stagingDir = path.join(this.storage.packsDir(packType), `.staging-${randomUUID()}`);
 
         try {
           await this.copyDirectory(parsed.packRoot, stagingDir);
@@ -95,6 +116,12 @@ export class PackImportService {
             : (existing?.iconPath ?? null);
 
           await rm(finalDir, { recursive: true, force: true });
+          if (typeChanged && existing) {
+            await rm(path.join(this.storage.packsDir(existing.type), existing.folderName), {
+              recursive: true,
+              force: true,
+            });
+          }
           await rename(stagingDir, finalDir);
 
           const sizeBytes = await dirSize(finalDir);
@@ -103,7 +130,7 @@ export class PackImportService {
           entity.packUuid = parsed.uuid;
           entity.version = parsed.version;
           entity.versionArray = parsed.versionArray;
-          entity.type = type;
+          entity.type = packType;
           entity.folderName = folderName;
           entity.iconPath = iconPath;
           entity.sizeBytes = String(sizeBytes);
@@ -114,7 +141,12 @@ export class PackImportService {
           const saved = await this.packs.save(entity);
           const dto = this.packsService.toDto(saved);
           imported.push(dto);
-          if (existing) replaced.push(parsed.name);
+          if (existing) {
+            replaced.push(parsed.name);
+            log(`Replaced pack: ${parsed.name} (${parsed.version})`);
+          } else {
+            log(`Imported pack: ${parsed.name} (${parsed.version})`);
+          }
         } catch (error) {
           await rm(stagingDir, { recursive: true, force: true });
           errors.push({
@@ -131,15 +163,21 @@ export class PackImportService {
         warnings.push(issue);
       }
 
+      const durationMs = Date.now() - startedAt;
+      log(
+        `Completed import: ${imported.length} imported, ${replaced.length} replaced, ${skipped.length} skipped, ${errors.length} failed in ${(durationMs / 1000).toFixed(2)}s.`,
+      );
+
       return {
         imported,
         skipped,
         replaced,
         warnings,
         errors,
-        durationMs: Date.now() - startedAt,
+        durationMs,
         bundleType: type,
         duplicatePolicy: policy,
+        logs,
       };
     } finally {
       await this.zip.cleanup(workDir);

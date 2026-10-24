@@ -59,7 +59,7 @@ services:
   core-api:
     build:
       context: ..
-      dockerfile: ../apps/core-api/Dockerfile
+      dockerfile: apps/core-api/Dockerfile
     container_name: mc-platform-api
     env_file:
       - ../.env
@@ -96,17 +96,17 @@ services:
     labels:
       traefik.enable: "true"
       traefik.docker.network: minecraft-proxy
-      traefik.http.routers.mc-api.rule: Host(`${APP_HOST:-app.localhost}`) && (PathPrefix(`/api`) || PathPrefix(`/socket.io`))
+      traefik.http.routers.mc-api.rule: PathPrefix(`/api`) || PathPrefix(`/socket.io`)
       traefik.http.routers.mc-api.entrypoints: web
       traefik.http.routers.mc-api.priority: "100"
       traefik.http.services.mc-api.loadbalancer.server.port: "3000"
     restart: unless-stopped
     logging: *default-logging
 
-  web-api:
+  web-app:
     build:
       context: ..
-      dockerfile: ../apps/web-api/Dockerfile
+      dockerfile: apps/web-app/Dockerfile
     container_name: mc-platform-web
     networks:
       - proxy

@@ -1,5 +1,5 @@
-import { Injectable, Logger, type OnModuleInit } from "@nestjs/common";
-import type { ConfigService } from "@nestjs/config";
+import { Inject, Injectable, Logger, type OnModuleInit } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
 import { InjectRepository } from "@nestjs/typeorm";
 import bcrypt from "bcryptjs";
 import type { Repository } from "typeorm";
@@ -14,7 +14,7 @@ export class UsersService implements OnModuleInit {
   constructor(
     @InjectRepository(UserEntity)
     private readonly users: Repository<UserEntity>,
-    private readonly config: ConfigService,
+    @Inject(ConfigService) private readonly config: ConfigService,
   ) {}
 
   async onModuleInit(): Promise<void> {
