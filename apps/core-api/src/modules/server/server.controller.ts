@@ -1,14 +1,35 @@
-import type { DashboardDto, ServerStatsDto, ServerStatusDto } from "@mc/shared";
-import { Body, Controller, Get, Header, HttpCode, Inject, Post, Query } from "@nestjs/common";
+import type {
+  AllowListDto,
+  AllowListEntry,
+  DashboardDto,
+  ServerStatsDto,
+  ServerStatusDto,
+} from "@mc/shared";
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Header,
+  HttpCode,
+  Inject,
+  Param,
+  Post,
+  Query,
+} from "@nestjs/common";
 import { ApiBearerAuth, ApiOperation, ApiTags } from "@nestjs/swagger";
 import { Roles } from "../../common/decorators/roles.decorator.js";
+import { AllowlistService } from "./allowlist.service.js";
 import { ServerService } from "./server.service.js";
 
 @ApiTags("server")
 @ApiBearerAuth()
 @Controller("server")
 export class ServerController {
-  constructor(@Inject(ServerService) private readonly server: ServerService) {}
+  constructor(
+    @Inject(ServerService) private readonly server: ServerService,
+    @Inject(AllowlistService) private readonly allowlist: AllowlistService,
+  ) {}
 
   @Get("status")
   status(): Promise<ServerStatusDto> {
@@ -60,5 +81,34 @@ export class ServerController {
     return this.server.logsText(
       Number.isFinite(parsed) ? Math.min(Math.max(parsed, 1), 10_000) : 500,
     );
+  }
+
+  @Get("allowlist")
+  @Roles("admin", "moderator")
+  @ApiOperation({ summary: "Get the current allowlist" })
+  async getAllowlist(): Promise<AllowListDto> {
+    return this.allowlist.getAllowlist();
+  }
+
+  @Post("allowlist")
+  @Roles("admin", "moderator")
+  @ApiOperation({ summary: "Add a player to the allowlist" })
+  async addToAllowlist(@Body() entry: AllowListEntry): Promise<AllowListDto> {
+    return this.allowlist.addEntry(entry);
+  }
+
+  @Delete("allowlist/:name")
+  @Roles("admin", "moderator")
+  @ApiOperation({ summary: "Remove a player from the allowlist" })
+  async removeFromAllowlist(@Param("name") name: string): Promise<AllowListDto> {
+    return this.allowlist.removeEntry(name);
+  }
+
+  @Delete("allowlist")
+  @Roles("admin", "moderator")
+  @HttpCode(204)
+  @ApiOperation({ summary: "Clear the entire allowlist" })
+  async clearAllowlist(): Promise<void> {
+    await this.allowlist.clear();
   }
 }

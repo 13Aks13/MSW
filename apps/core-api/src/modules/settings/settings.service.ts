@@ -92,6 +92,12 @@ const META: Record<string, PropertyMeta> = {
     type: "boolean",
     default: "true",
   },
+  "beta-apis": {
+    key: "beta-apis",
+    label: "Enable Beta APIs experiment",
+    type: "boolean",
+    default: "false",
+  },
 };
 
 @Injectable()
