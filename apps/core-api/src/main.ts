@@ -45,7 +45,11 @@ async function bootstrap(): Promise<void> {
     swaggerOptions: { persistAuthorization: true },
   });
 
-  const server = app.getHttpServer();
+  // Set to a generous but finite value, e.g., 5 minutes
+  const FIVE_MINUTES = 5 * 60 * 1000;
+  server.timeout = FIVE_MINUTES;
+  server.requestTimeout = FIVE_MINUTES;
+  server.headersTimeout = 60 * 1000;
   server.timeout = 0;
   server.requestTimeout = 0;
   server.headersTimeout = 0;
