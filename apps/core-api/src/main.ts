@@ -47,6 +47,7 @@ async function bootstrap(): Promise<void> {
 
   // Set to a generous but finite value, e.g., 5 minutes
   const FIVE_MINUTES = 5 * 60 * 1000;
+  const server = app.getHttpServer();
   server.timeout = FIVE_MINUTES;
   server.requestTimeout = FIVE_MINUTES;
   server.headersTimeout = 60 * 1000;
