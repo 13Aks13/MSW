@@ -8,6 +8,7 @@ import LoginPage from "./pages/LoginPage";
 import LogsPage from "./pages/LogsPage";
 import NotFoundPage from "./pages/NotFoundPage";
 import PacksPage from "./pages/PacksPage";
+import ServerPage from "./pages/ServerPage";
 import SettingsPage from "./pages/SettingsPage";
 import WorldsPage from "./pages/WorldsPage";
 
@@ -40,6 +41,7 @@ export default function App() {
               <Route path="/worlds" element={<WorldsPage />} />
               <Route path="/backups" element={<BackupsPage />} />
               <Route path="/logs" element={<LogsPage />} />
+              <Route path="/server" element={<ServerPage />} />
               <Route path="/settings" element={<SettingsPage />} />
               <Route path="*" element={<NotFoundPage />} />
             </Route>

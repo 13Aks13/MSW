@@ -1,4 +1,10 @@
-import type { DashboardDto, ServerStatsDto, ServerStatusDto } from "@mc/shared";
+import type {
+  AllowListDto,
+  AllowListEntry,
+  DashboardDto,
+  ServerStatsDto,
+  ServerStatusDto,
+} from "@mc/shared";
 import { api } from "./client";
 
 export async function getDashboard(): Promise<DashboardDto> {
@@ -31,4 +37,23 @@ export async function downloadServerLogs(tail = 2000): Promise<Blob> {
     responseType: "blob",
   });
   return data;
+}
+
+export async function getAllowlist(): Promise<AllowListDto> {
+  const { data } = await api.get<AllowListDto>("/server/allowlist");
+  return data;
+}
+
+export async function addToAllowlist(entry: AllowListEntry): Promise<AllowListDto> {
+  const { data } = await api.post<AllowListDto>("/server/allowlist", entry);
+  return data;
+}
+
+export async function removeFromAllowlist(name: string): Promise<AllowListDto> {
+  const { data } = await api.delete<AllowListDto>(`/server/allowlist/${encodeURIComponent(name)}`);
+  return data;
+}
+
+export async function clearAllowlist(): Promise<void> {
+  await api.delete("/server/allowlist");
 }
