@@ -134,16 +134,25 @@ export default function ServerPage() {
           layout="inline"
           onFinish={onFinish}
           initialValues={{ name: "", xuid: "" }}
+          disabled={!canEdit}
         >
           <Form.Item
             name="name"
             label="Player Name"
             rules={[{ required: true, message: "Required" }]}
           >
-            <Input placeholder="Exact Minecraft username" style={{ width: 250 }} />
+            <Input
+              placeholder="Exact Minecraft username"
+              style={{ width: 250 }}
+              disabled={!canEdit}
+            />
           </Form.Item>
           <Form.Item name="xuid" label="Xbox User ID (XUID)">
-            <Input placeholder="Optional: 16-digit Xbox ID" style={{ width: 300 }} />
+            <Input
+              placeholder="Optional: 16-digit Xbox ID"
+              style={{ width: 300 }}
+              disabled={!canEdit}
+            />
           </Form.Item>
           <Form.Item>
             <Space>
@@ -152,6 +161,7 @@ export default function ServerPage() {
                 htmlType="submit"
                 icon={<PlusOutlined />}
                 loading={addMutation.isPending}
+                disabled={!canEdit}
               >
                 Add to Allowlist
               </Button>

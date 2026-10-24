@@ -54,8 +54,8 @@ export default function SettingsPage() {
 
   const apply = useMutation({
     mutationFn: async () => {
-      // First save the current form values
-      const values = form.getFieldsValue();
+      // First validate and save the current form values
+      const values = await form.validateFields();
       const payload: Record<string, string> = {};
       for (const [key, value] of Object.entries(values)) {
         if (value === undefined || value === null) {
