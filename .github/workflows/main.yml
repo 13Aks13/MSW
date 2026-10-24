@@ -43,7 +43,7 @@ jobs:
 
   review:
     name: AI Code Review
-    needs: ci # ЗАПУСКАЄТЬСЯ ТІЛЬКИ ПІСЛЯ УСПІШНОГО ПРОХОДЖЕННЯ CI
+    needs: ci
     runs-on: ubuntu-latest
     permissions:
       contents: read
