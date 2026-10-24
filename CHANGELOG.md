@@ -1,3 +1,9 @@
+## [1.6.1](https://github.com/13Aks13/MinecraftSWP/compare/1.6.0...1.6.1) (2026-10-24)
+
+### Bug Fixes
+
+- **docker:** exclude TypeScript build info from the build context ([#16](https://github.com/13Aks13/MinecraftSWP/issues/16)) ([38769c9](https://github.com/13Aks13/MinecraftSWP/commit/38769c9b04cdf05e3f2dfd7769e5e31f9f1b3bfd))
+
 # [1.6.0](https://github.com/13Aks13/MinecraftSWP/compare/1.5.0...1.6.0) (2026-10-24)
 
 ### Bug Fixes
