@@ -1,3 +1,9 @@
+# [1.7.0](https://github.com/13Aks13/MinecraftSWP/compare/1.6.1...1.7.0) (2026-10-24)
+
+### Features
+
+- **infra:** update worker container ([#17](https://github.com/13Aks13/MinecraftSWP/issues/17)) ([fa5e433](https://github.com/13Aks13/MinecraftSWP/commit/fa5e4331da131519c84d88371b3702f0a3b4558c))
+
 ## [1.6.1](https://github.com/13Aks13/MinecraftSWP/compare/1.6.0...1.6.1) (2026-10-24)
 
 ### Bug Fixes
