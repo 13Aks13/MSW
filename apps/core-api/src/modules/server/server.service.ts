@@ -5,15 +5,13 @@ import type {
   ServerStatsDto,
   ServerStatusDto,
 } from "@mc/shared";
-import { Inject, Injectable, Logger } from "@nestjs/common";
+import { Inject, Injectable } from "@nestjs/common";
 import { DataSource } from "typeorm";
 import { StorageService } from "../../common/storage/storage.service.js";
 import { DockerService } from "./docker.service.js";
 
 @Injectable()
 export class ServerService {
-  private readonly logger = new Logger(ServerService.name);
-
   constructor(
     @Inject(DockerService) private readonly docker: DockerService,
     @Inject(DataSource) private readonly dataSource: DataSource,

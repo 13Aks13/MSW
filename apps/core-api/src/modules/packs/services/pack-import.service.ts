@@ -5,18 +5,12 @@ import {
   type DuplicatePolicy,
   type ImportIssue,
   type ImportReport,
+  type PackDependency,
   type PackDto,
   type PackType,
   slugify,
 } from "@mc/shared";
-import {
-  BadRequestException,
-  ConflictException,
-  Inject,
-  Injectable,
-  Logger,
-  NotFoundException,
-} from "@nestjs/common";
+import { BadRequestException, Inject, Injectable, Logger } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { In, type Repository } from "typeorm";
 import { StorageService } from "../../../common/storage/storage.service.js";
@@ -43,8 +37,11 @@ export class PackImportService {
     file: Express.Multer.File | undefined,
     type: PackType,
     policy: DuplicatePolicy = "replace",
+    onProgress?: (progress: number, step: string, logMessage?: string) => void,
   ): Promise<ImportReport> {
-    if (!file) throw new BadRequestException('ZIP file is required in the "file" field');
+    if (!file) {
+      throw new BadRequestException('ZIP file is required in the "file" field');
+    }
 
     const startedAt = Date.now();
     const workDir = path.join(this.storage.tempDir(), `import-${randomUUID()}`);
@@ -55,18 +52,31 @@ export class PackImportService {
     const skipped: string[] = [];
     const replaced: string[] = [];
     const logs: string[] = [];
-    const log = (message: string) => {
+    let progress = 0;
+    const log = (message: string, nextProgress?: number, step?: string) => {
       logs.push(message);
       this.logger.log(message);
+      if (nextProgress !== undefined) {
+        progress = nextProgress;
+      }
+      onProgress?.(progress, step ?? message, message);
     };
 
     try {
       await mkdir(extractedDir, { recursive: true });
-      log(`Received ${file.originalname} (${file.size} bytes); extracting archive...`);
+      log(
+        `Received ${file.originalname} (${file.size} bytes); extracting archive...`,
+        5,
+        "Extracting archive",
+      );
       await this.zip.extract(file.path, extractedDir);
 
       const manifestPaths = await this.manifests.findManifests(extractedDir);
-      log(`Extracted archive; found ${manifestPaths.length} manifest(s).`);
+      log(
+        `Extracted archive; found ${manifestPaths.length} manifest(s).`,
+        15,
+        "Scanning manifests",
+      );
       if (manifestPaths.length === 0) {
         throw new BadRequestException(
           "No manifest.json found inside the ZIP archive. Expected pack folders with manifest.json.",
@@ -74,7 +84,11 @@ export class PackImportService {
       }
 
       for (const manifestPath of manifestPaths) {
-        log(`Processing manifest: ${path.relative(extractedDir, manifestPath)}`);
+        log(
+          `Processing manifest: ${path.relative(extractedDir, manifestPath)}`,
+          undefined,
+          "Processing manifests",
+        );
         const parsed = await this.manifests.parse(manifestPath, type);
         const packType = parsed.type ?? type;
         if (!parsed.type) {
@@ -95,7 +109,7 @@ export class PackImportService {
         const existing = await this.packs.findOneBy({ packUuid: parsed.uuid });
         if (existing && policy === "skip") {
           skipped.push(parsed.name);
-          log(`Skipped existing pack: ${parsed.name}`);
+          log(`Skipped existing pack: ${parsed.name}`, undefined, "Processing manifests");
           continue;
         }
 
@@ -143,9 +157,17 @@ export class PackImportService {
           imported.push(dto);
           if (existing) {
             replaced.push(parsed.name);
-            log(`Replaced pack: ${parsed.name} (${parsed.version})`);
+            log(
+              `Replaced pack: ${parsed.name} (${parsed.version})`,
+              undefined,
+              "Processing manifests",
+            );
           } else {
-            log(`Imported pack: ${parsed.name} (${parsed.version})`);
+            log(
+              `Imported pack: ${parsed.name} (${parsed.version})`,
+              undefined,
+              "Processing manifests",
+            );
           }
         } catch (error) {
           await rm(stagingDir, { recursive: true, force: true });
@@ -166,6 +188,8 @@ export class PackImportService {
       const durationMs = Date.now() - startedAt;
       log(
         `Completed import: ${imported.length} imported, ${replaced.length} replaced, ${skipped.length} skipped, ${errors.length} failed in ${(durationMs / 1000).toFixed(2)}s.`,
+        100,
+        "Completed",
       );
 
       return {
@@ -212,7 +236,9 @@ export class PackImportService {
       const match = entries.find(
         (entry) => entry.isFile() && entry.name.toLowerCase() === candidate,
       );
-      if (match) return path.join(dir, match.name);
+      if (match) {
+        return path.join(dir, match.name);
+      }
     }
     return null;
   }
@@ -236,8 +262,12 @@ export class PackImportService {
   }
 
   private async attachDependencyStatus(packs: PackDto[], warnings: ImportIssue[]): Promise<void> {
-    const uuids = [...new Set(packs.flatMap((pack) => pack.dependencies.map((dep) => dep.uuid)))];
-    if (uuids.length === 0) return;
+    const uuids = [
+      ...new Set(packs.flatMap((pack) => pack.dependencies.map((dep: PackDependency) => dep.uuid))),
+    ];
+    if (uuids.length === 0) {
+      return;
+    }
 
     const resolved = await this.packs.find({
       where: { packUuid: In(uuids) },
@@ -246,7 +276,7 @@ export class PackImportService {
     const byUuid = new Map(resolved.map((pack) => [pack.packUuid, pack.id]));
 
     for (const pack of packs) {
-      pack.dependencies = pack.dependencies.map((dependency) => {
+      pack.dependencies = pack.dependencies.map((dependency: PackDependency) => {
         const resolvedPackId = byUuid.get(dependency.uuid) ?? null;
         if (!resolvedPackId) {
           warnings.push({

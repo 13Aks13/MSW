@@ -59,7 +59,9 @@ export function slugify(input: string, fallback = "pack"): string {
 
 export function formatBytes(bytes: number | string, fractionDigits = 1): string {
   const value = typeof bytes === "string" ? Number(bytes) : bytes;
-  if (!Number.isFinite(value) || value <= 0) return "0 B";
+  if (!Number.isFinite(value) || value <= 0) {
+    return "0 B";
+  }
   const units = ["B", "KB", "MB", "GB", "TB"];
   const index = Math.min(Math.floor(Math.log(value) / Math.log(1024)), units.length - 1);
   return `${(value / 1024 ** index).toFixed(index === 0 ? 0 : fractionDigits)} ${units[index]}`;

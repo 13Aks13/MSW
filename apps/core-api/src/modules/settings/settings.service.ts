@@ -107,7 +107,7 @@ export class SettingsService implements OnModuleInit {
 
   async list(): Promise<ServerPropertyDto[]> {
     const values = await this.read();
-    return SERVER_PROPERTY_ALLOWLIST.map((key) => {
+    return SERVER_PROPERTY_ALLOWLIST.map((key: (typeof SERVER_PROPERTY_ALLOWLIST)[number]) => {
       const meta = META[key];
       return {
         key,
@@ -124,9 +124,13 @@ export class SettingsService implements OnModuleInit {
     const allowed = new Set<string>(SERVER_PROPERTY_ALLOWLIST);
 
     for (const [key, rawValue] of Object.entries(updates)) {
-      if (!allowed.has(key)) throw new BadRequestException(`Property "${key}" is not editable`);
+      if (!allowed.has(key)) {
+        throw new BadRequestException(`Property "${key}" is not editable`);
+      }
       const meta = META[key];
-      if (meta?.readOnly) throw new BadRequestException(`Property "${key}" is read-only`);
+      if (meta?.readOnly) {
+        throw new BadRequestException(`Property "${key}" is read-only`);
+      }
 
       const value = String(rawValue).trim();
       if (value.includes("\n") || value.includes("\r")) {
@@ -152,14 +156,20 @@ export class SettingsService implements OnModuleInit {
 
   private async read(): Promise<Record<string, string>> {
     const file = this.storage.serverPropertiesPath();
-    if (!(await pathExists(file))) return {};
+    if (!(await pathExists(file))) {
+      return {};
+    }
     const text = await readFile(file, "utf8");
     const values: Record<string, string> = {};
     for (const line of text.split(/\r?\n/)) {
       const trimmed = line.trim();
-      if (!trimmed || trimmed.startsWith("#")) continue;
+      if (!trimmed || trimmed.startsWith("#")) {
+        continue;
+      }
       const index = trimmed.indexOf("=");
-      if (index <= 0) continue;
+      if (index <= 0) {
+        continue;
+      }
       values[trimmed.slice(0, index).trim()] = trimmed.slice(index + 1);
     }
     return values;

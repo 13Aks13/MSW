@@ -1,5 +1,6 @@
 import type {
   DuplicatePolicy,
+  ImportJobDto,
   ImportReport,
   PackDependency,
   PackDto,
@@ -45,6 +46,35 @@ export async function packDependencies(id: string): Promise<PackDependency[]> {
   return data;
 }
 
+export async function deletePacks(ids: string[]): Promise<{ deleted: number }> {
+  const { data } = await api.delete<{ deleted: number }>("/packs", { data: { ids } });
+  return data;
+}
+
+export async function deleteAllPacks(type?: PackType): Promise<{ deleted: number }> {
+  const { data } = await api.delete<{ deleted: number }>("/packs", {
+    params: { type, all: "true" },
+  });
+  return data;
+}
+export async function importBundleAsync(
+  file: File,
+  type: PackType,
+  duplicatePolicy: DuplicatePolicy,
+): Promise<{ jobId: string; status: string }> {
+  const form = new FormData();
+  form.append("file", file);
+  const { data } = await uploadWithProgress(
+    `/packs/import/async?type=${type}&onDuplicate=${duplicatePolicy}`,
+    form,
+  );
+  return data as { jobId: string; status: string };
+}
+
+export async function getImportJob(jobId: string): Promise<ImportJobDto> {
+  const { data } = await api.get<ImportJobDto>(`/packs/import/jobs/${jobId}`);
+  return data;
+}
 export function packIconUrl(id: string): string {
   const base = import.meta.env.VITE_API_URL ?? "/api/v1";
   return `${base}/packs/${id}/icon`;

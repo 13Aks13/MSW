@@ -16,7 +16,7 @@ export class DockerService implements OnModuleDestroy {
   private readonly docker: Docker;
   readonly containerName: string;
 
-  constructor(@Inject(ConfigService) private readonly config: ConfigService) {
+  constructor(@Inject(ConfigService) readonly config: ConfigService) {
     this.containerName = config.get<string>("BEDROCK_CONTAINER", "mc-bedrock");
     const socketPath = config.get<string>("DOCKER_SOCKET", "/var/run/docker.sock");
     this.docker = new Docker({ socketPath });
@@ -39,7 +39,9 @@ export class DockerService implements OnModuleDestroy {
       return await this.container().inspect();
     } catch (error) {
       const statusCode = (error as { statusCode?: number }).statusCode;
-      if (statusCode === CONTAINER_NOT_FOUND) return null;
+      if (statusCode === CONTAINER_NOT_FOUND) {
+        return null;
+      }
       throw error;
     }
   }
@@ -139,8 +141,12 @@ export class DockerService implements OnModuleDestroy {
    */
   async stop(timeoutSeconds = 45): Promise<void> {
     const info = await this.inspectSafe();
-    if (!info) throw new Error(`Container "${this.containerName}" does not exist`);
-    if (!info.State.Running) return;
+    if (!info) {
+      throw new Error(`Container "${this.containerName}" does not exist`);
+    }
+    if (!info.State.Running) {
+      return;
+    }
 
     await this.container().stop({ t: timeoutSeconds });
   }
@@ -187,8 +193,12 @@ export class DockerService implements OnModuleDestroy {
     const deadline = Date.now() + timeoutSeconds * 1000;
     while (Date.now() < deadline) {
       const info = await this.inspectSafe().catch(() => null);
-      if (!info) return !running;
-      if (info.State.Running === running) return true;
+      if (!info) {
+        return !running;
+      }
+      if (info.State.Running === running) {
+        return true;
+      }
       await new Promise((resolve) => setTimeout(resolve, 1_000));
     }
     return false;
@@ -196,7 +206,9 @@ export class DockerService implements OnModuleDestroy {
 
   async streamLogs(tail: number, onLine: LogSink): Promise<() => void> {
     const info = await this.inspectSafe();
-    if (!info) throw new Error(`Container "${this.containerName}" does not exist`);
+    if (!info) {
+      throw new Error(`Container "${this.containerName}" does not exist`);
+    }
 
     const stream = (await this.container().logs({
       follow: true,
@@ -214,7 +226,9 @@ export class DockerService implements OnModuleDestroy {
           const lines = buffer.split("\n");
           buffer = lines.pop() ?? "";
           for (const line of lines) {
-            if (!line.trim()) continue;
+            if (!line.trim()) {
+              continue;
+            }
             const match = LOG_LINE_RE.exec(line);
             onLine({
               stream: streamName,
@@ -230,8 +244,9 @@ export class DockerService implements OnModuleDestroy {
     if (info.Config.Tty) {
       stream.on("data", (chunk: Buffer) => {
         for (const line of chunk.toString("utf8").split("\n")) {
-          if (line.trim())
+          if (line.trim()) {
             onLine({ stream: "stdout", timestamp: new Date().toISOString(), message: line });
+          }
         }
       });
     } else {
@@ -249,7 +264,9 @@ export class DockerService implements OnModuleDestroy {
 
   async logsText(tail = 500): Promise<string> {
     const info = await this.inspectSafe();
-    if (!info) throw new Error(`Container "${this.containerName}" does not exist`);
+    if (!info) {
+      throw new Error(`Container "${this.containerName}" does not exist`);
+    }
 
     const buffer = (await this.container().logs({
       stdout: true,
@@ -258,7 +275,9 @@ export class DockerService implements OnModuleDestroy {
       timestamps: true,
     })) as unknown as Buffer;
 
-    if (info.Config.Tty) return buffer.toString("utf8");
+    if (info.Config.Tty) {
+      return buffer.toString("utf8");
+    }
 
     let stdout = "";
     const out = new Writable({

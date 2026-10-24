@@ -31,8 +31,12 @@ api.interceptors.response.use(
 export function errorMessage(error: unknown): string {
   if (axios.isAxiosError<ApiErrorBody>(error)) {
     const message = error.response?.data?.message;
-    if (Array.isArray(message)) return message.join(", ");
-    if (message) return message;
+    if (Array.isArray(message)) {
+      return message.join(", ");
+    }
+    if (message) {
+      return message;
+    }
     return error.message;
   }
   return error instanceof Error ? error.message : "Unexpected error";
@@ -48,7 +52,9 @@ export async function uploadWithProgress(
   return api.post(url, formData, {
     timeout: UPLOAD_TIMEOUT_MS,
     onUploadProgress: (event) => {
-      if (!onProgress || !event.total) return;
+      if (!onProgress || !event.total) {
+        return;
+      }
       // Keep a small gap so the bar does not claim completion while the
       // server is still extracting/installing the bundle.
       onProgress(Math.min(95, Math.round((event.loaded / event.total) * 100)));

@@ -19,7 +19,9 @@ export class UsersService implements OnModuleInit {
 
   async onModuleInit(): Promise<void> {
     const count = await this.users.count();
-    if (count > 0) return;
+    if (count > 0) {
+      return;
+    }
 
     const email = this.config.get<string>("ADMIN_EMAIL", "admin@example.com").toLowerCase();
     const password = this.config.get<string>("ADMIN_PASSWORD", "ChangeMe123!");

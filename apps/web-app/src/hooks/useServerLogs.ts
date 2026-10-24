@@ -11,7 +11,9 @@ export function useServerLogs() {
   const pausedRef = useRef(false);
 
   useEffect(() => {
-    if (!token) return undefined;
+    if (!token) {
+      return undefined;
+    }
 
     const socket = io("/logs", {
       path: "/socket.io",
@@ -35,7 +37,9 @@ export function useServerLogs() {
       setError(payload.message);
     });
     socket.on(SOCKET_EVENTS.logLine, (line: LogLineDto) => {
-      if (pausedRef.current) return;
+      if (pausedRef.current) {
+        return;
+      }
       setLines((current) => {
         const next = [...current, line];
         return next.length > 3_000 ? next.slice(next.length - 3_000) : next;

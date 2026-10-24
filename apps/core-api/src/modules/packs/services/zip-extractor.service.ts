@@ -50,7 +50,9 @@ export class ZipExtractorService {
         let settled = false;
 
         const fail = (error: Error): void => {
-          if (settled) return;
+          if (settled) {
+            return;
+          }
           settled = true;
           zipFile.close();
           reject(
@@ -65,7 +67,9 @@ export class ZipExtractorService {
         zipFile.on("entry", (entry: yauzl.Entry) => {
           void this.processEntry(zipFile, entry, root, limits)
             .then((written) => {
-              if (settled) return;
+              if (settled) {
+                return;
+              }
               entries += 1;
               bytes += written;
               if (entries > limits.maxEntries) {
@@ -84,7 +88,9 @@ export class ZipExtractorService {
         });
 
         zipFile.on("end", () => {
-          if (settled) return;
+          if (settled) {
+            return;
+          }
           settled = true;
           resolve({ files: entries, bytes });
         });
@@ -143,8 +149,11 @@ export class ZipExtractorService {
   ): Promise<NodeJS.ReadableStream> {
     return new Promise((resolve, reject) => {
       zipFile.openReadStream(entry, (error, stream) => {
-        if (error || !stream) reject(error ?? new Error("empty stream"));
-        else resolve(stream);
+        if (error || !stream) {
+          reject(error ?? new Error("empty stream"));
+        } else {
+          resolve(stream);
+        }
       });
     });
   }

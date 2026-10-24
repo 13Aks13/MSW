@@ -45,6 +45,14 @@ async function bootstrap(): Promise<void> {
     swaggerOptions: { persistAuthorization: true },
   });
 
+  // Set to a generous but finite value, e.g., 5 minutes
+  const FIVE_MINUTES = 5 * 60 * 1000;
+  server.timeout = FIVE_MINUTES;
+  server.requestTimeout = FIVE_MINUTES;
+  server.headersTimeout = 60 * 1000;
+  server.timeout = 0;
+  server.requestTimeout = 0;
+  server.headersTimeout = 0;
   await app.listen(port, "0.0.0.0");
   // eslint-disable-next-line no-console
   console.log(`core-api listening on http://0.0.0.0:${port} (docs: /api/docs)`);

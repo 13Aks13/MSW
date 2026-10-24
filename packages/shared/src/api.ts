@@ -165,6 +165,22 @@ export interface ServerPropertyDto {
   readOnly?: boolean;
 }
 
+export type ImportJobStatus = "queued" | "active" | "completed" | "failed" | "cancelled";
+
+export interface ImportJobDto {
+  id: string;
+  bundleType: PackType;
+  duplicatePolicy: DuplicatePolicy;
+  status: ImportJobStatus;
+  progress: number;
+  currentStep: string;
+  logs: string[];
+  report: ImportReport | null;
+  error: string | null;
+  createdAt: string;
+  updatedAt: string;
+  completedAt: string | null;
+}
 export interface HealthDto {
   status: "ok" | "degraded";
   checks: Array<{

@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import type { HealthDto } from "@mc/shared";
 import { Controller, Get, Inject } from "@nestjs/common";
 import { ApiTags } from "@nestjs/swagger";
@@ -6,9 +8,32 @@ import { Public } from "../../common/decorators/public.decorator.js";
 import { StorageService } from "../../common/storage/storage.service.js";
 import { DockerService } from "../server/docker.service.js";
 
+function resolveAppVersion(): string {
+  const envVersion = process.env.APP_VERSION?.trim();
+  if (envVersion) {
+    return envVersion;
+  }
+
+  try {
+    const packageJsonPath = join(__dirname, "..", "..", "..", "package.json");
+    const packageJson = JSON.parse(readFileSync(packageJsonPath, "utf8")) as {
+      version?: string;
+    };
+    if (packageJson.version) {
+      return packageJson.version;
+    }
+  } catch {
+    // Fall through to the baked-in release version.
+  }
+
+  return "1.3.0";
+}
+
 @ApiTags("health")
 @Controller("health")
 export class HealthController {
+  private readonly appVersion = resolveAppVersion();
+
   constructor(
     @Inject(DataSource) private readonly dataSource: DataSource,
     @Inject(DockerService) private readonly docker: DockerService,
@@ -52,9 +77,11 @@ export class HealthController {
     }
 
     return {
-      status: checks.every((check) => check.status === "up") ? "ok" : "degraded",
+      status: checks.every((check: HealthDto["checks"][number]) => check.status === "up")
+        ? "ok"
+        : "degraded",
       checks,
-      version: "1.2.0",
+      version: this.appVersion,
       timestamp: new Date().toISOString(),
     };
   }

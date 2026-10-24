@@ -68,7 +68,9 @@ export default function SettingsPage() {
   const onFinish = (values: Record<string, string | number>) => {
     const payload: Record<string, string> = {};
     for (const [key, value] of Object.entries(values)) {
-      if (value === undefined || value === null) continue;
+      if (value === undefined || value === null) {
+        continue;
+      }
       payload[key] = String(value);
     }
     save.mutate(payload);

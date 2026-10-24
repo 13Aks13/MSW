@@ -75,7 +75,9 @@ export class WorldsService {
       .leftJoinAndSelect("worldPack.pack", "pack")
       .where("world.id = :id", { id })
       .getOne();
-    if (!world) throw new NotFoundException(`World ${id} not found`);
+    if (!world) {
+      throw new NotFoundException(`World ${id} not found`);
+    }
     return world;
   }
 
@@ -115,7 +117,9 @@ export class WorldsService {
           this.worldPacks.create({ worldId: saved.id, packId: pack.id, kind: "behavior" }),
         ),
       ];
-      if (links.length > 0) await this.worldPacks.save(links);
+      if (links.length > 0) {
+        await this.worldPacks.save(links);
+      }
 
       return this.toDto(await this.get(saved.id));
     } catch (error) {
@@ -187,10 +191,14 @@ export class WorldsService {
    */
   async syncActiveWorld(): Promise<WorldEntity | null> {
     const active = await this.worlds.findOneBy({ status: "active" });
-    if (!active) return null;
+    if (!active) {
+      return null;
+    }
 
     const activeDir = this.storage.activeWorldDir();
-    if (!(await pathExists(activeDir))) return null;
+    if (!(await pathExists(activeDir))) {
+      return null;
+    }
 
     const target = path.join(this.storage.worldsDir(), active.folderName);
     const staging = path.join(this.storage.worldsDir(), `.sync-${active.id}-${Date.now()}`);
@@ -261,7 +269,9 @@ export class WorldsService {
     const links = source.packs.map((link) =>
       this.worldPacks.create({ worldId: saved.id, packId: link.packId, kind: link.kind }),
     );
-    if (links.length > 0) await this.worldPacks.save(links);
+    if (links.length > 0) {
+      await this.worldPacks.save(links);
+    }
 
     return this.toDto(await this.get(saved.id));
   }
@@ -318,14 +328,18 @@ export class WorldsService {
     behaviorIds: string[],
   ): Promise<{ resource: PackEntity[]; behavior: PackEntity[] }> {
     const ids = [...new Set([...resourceIds, ...behaviorIds])];
-    if (ids.length === 0) return { resource: [], behavior: [] };
+    if (ids.length === 0) {
+      return { resource: [], behavior: [] };
+    }
 
     const found = await this.packs.find({ where: { id: In(ids) } });
     const byId = new Map(found.map((pack) => [pack.id, pack]));
 
     const resource = resourceIds.map((id) => {
       const pack = byId.get(id);
-      if (!pack) throw new BadRequestException(`Resource pack ${id} does not exist`);
+      if (!pack) {
+        throw new BadRequestException(`Resource pack ${id} does not exist`);
+      }
       if (pack.type !== "resource") {
         throw new BadRequestException(`Pack "${pack.name}" is not a resource pack`);
       }
@@ -334,7 +348,9 @@ export class WorldsService {
 
     const behavior = behaviorIds.map((id) => {
       const pack = byId.get(id);
-      if (!pack) throw new BadRequestException(`Behavior pack ${id} does not exist`);
+      if (!pack) {
+        throw new BadRequestException(`Behavior pack ${id} does not exist`);
+      }
       if (pack.type !== "behavior") {
         throw new BadRequestException(`Pack "${pack.name}" is not a behavior pack`);
       }

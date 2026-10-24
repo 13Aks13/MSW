@@ -1,8 +1,10 @@
 import { createReadStream } from "node:fs";
 import { stat } from "node:fs/promises";
 import path from "node:path";
-import type { ImportReport, PackDependency, PackDto, Paginated } from "@mc/shared";
+import type { ImportJobDto, ImportReport, PackDependency, PackDto, Paginated } from "@mc/shared";
 import {
+  BadRequestException,
+  Body,
   Controller,
   Delete,
   Get,
@@ -24,6 +26,8 @@ import { StorageService } from "../../common/storage/storage.service.js";
 import { BundleQueryDto, ImportQueryDto } from "./dto/import-bundle.dto.js";
 import { ListPacksQueryDto } from "./dto/list-packs.dto.js";
 import { PacksService } from "./packs.service.js";
+import { ImportJobService } from "./services/import-job.service.js";
+import { ImportQueueService } from "./services/import-queue.service.js";
 import { PackImportService } from "./services/pack-import.service.js";
 import { buildUploadOptions } from "./upload.config.js";
 
@@ -35,6 +39,8 @@ export class PacksController {
     @Inject(PacksService) private readonly packs: PacksService,
     @Inject(PackImportService) private readonly importer: PackImportService,
     @Inject(StorageService) private readonly storage: StorageService,
+    @Inject(ImportJobService) private readonly importJobs: ImportJobService,
+    @Inject(ImportQueueService) private readonly importQueue: ImportQueueService,
   ) {}
 
   @Get()
@@ -109,10 +115,58 @@ export class PacksController {
     return this.importer.importBundle(file, "behavior", query.onDuplicate ?? "replace");
   }
 
+  @Post("import/async")
+  @Roles("admin", "moderator")
+  @UseInterceptors(FileInterceptor("file", buildUploadOptions()))
+  @ApiConsumes("multipart/form-data")
+  async importAsync(
+    @UploadedFile() file: Express.Multer.File | undefined,
+    @Query() query: ImportQueryDto,
+  ): Promise<{ jobId: string; status: "queued" }> {
+    if (!file) {
+      throw new BadRequestException('ZIP file is required in the "file" field');
+    }
+    const type = query.type;
+    const policy = query.onDuplicate ?? "replace";
+    const job = await this.importJobs.createJob({
+      bundleType: type,
+      duplicatePolicy: policy,
+      filePath: file.path,
+    });
+    await this.importQueue.enqueue({ jobId: job.id, filePath: file.path, type, policy });
+    return { jobId: job.id, status: "queued" };
+  }
+
+  @Get("import/jobs/:id")
+  @Roles("admin", "moderator")
+  async importJob(@Param("id") id: string): Promise<ImportJobDto> {
+    const job = await this.importJobs.getJob(id);
+    if (!job) {
+      throw new NotFoundException("Import job not found");
+    }
+    return this.importJobs.toDto(job);
+  }
+
   @Delete(":id")
   @Roles("admin", "moderator")
   async remove(@Param("id", ParseUUIDPipe) id: string): Promise<{ deleted: true }> {
     await this.packs.remove(id);
     return { deleted: true };
+  }
+
+  @Delete()
+  @Roles("admin", "moderator")
+  async removeMany(
+    @Body() body: { ids?: string[] },
+    @Query("type") type?: "resource" | "behavior",
+    @Query("all") all?: string,
+  ): Promise<{ deleted: number }> {
+    if (body?.ids?.length) {
+      return this.packs.removeMany(body.ids);
+    }
+    if (all === "true" || !body?.ids?.length) {
+      return this.packs.removeAll(type);
+    }
+    return { deleted: 0 };
   }
 }

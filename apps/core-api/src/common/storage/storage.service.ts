@@ -18,7 +18,7 @@ export class StorageService implements OnModuleInit {
   async onModuleInit(): Promise<void> {
     await Promise.all(
       Object.values(STORAGE_DIRS).map((dir) =>
-        mkdir(path.join(this.root, dir), { recursive: true }),
+        mkdir(path.join(this.root, dir as string), { recursive: true }),
       ),
     );
     await mkdir(path.join(this.root, STORAGE_DIRS.metadata, "icons"), { recursive: true });
