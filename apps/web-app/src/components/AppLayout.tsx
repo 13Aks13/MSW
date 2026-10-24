@@ -87,7 +87,7 @@ export default function AppLayout() {
               textAlign: "center",
             }}
           >
-            <div>App v{health.data?.version ?? "1.2.0"}</div>
+            <div>App v{health.data?.version ?? "1.3.0"}</div>
           </div>
         )}
       </Sider>
