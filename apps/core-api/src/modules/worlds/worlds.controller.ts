@@ -12,7 +12,7 @@ import {
 } from "@nestjs/common";
 import { ApiBearerAuth, ApiOperation, ApiTags } from "@nestjs/swagger";
 import { Roles } from "../../common/decorators/roles.decorator.js";
-import type { CreateWorldDto, ListWorldsQueryDto } from "./dto/world.dto.js";
+import { CreateWorldDto, ListWorldsQueryDto } from "./dto/world.dto.js";
 import { WorldsService } from "./worlds.service.js";
 
 @ApiTags("worlds")

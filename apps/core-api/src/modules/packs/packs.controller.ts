@@ -21,8 +21,8 @@ import { ApiBearerAuth, ApiConsumes, ApiOperation, ApiTags } from "@nestjs/swagg
 import { Public } from "../../common/decorators/public.decorator.js";
 import { Roles } from "../../common/decorators/roles.decorator.js";
 import { StorageService } from "../../common/storage/storage.service.js";
-import type { BundleQueryDto, ImportQueryDto } from "./dto/import-bundle.dto.js";
-import type { ListPacksQueryDto } from "./dto/list-packs.dto.js";
+import { BundleQueryDto, ImportQueryDto } from "./dto/import-bundle.dto.js";
+import { ListPacksQueryDto } from "./dto/list-packs.dto.js";
 import { PacksService } from "./packs.service.js";
 import { PackImportService } from "./services/pack-import.service.js";
 import { buildUploadOptions } from "./upload.config.js";
@@ -57,7 +57,9 @@ export class PacksController {
   @Get(":id/icon")
   async icon(@Param("id", ParseUUIDPipe) id: string): Promise<StreamableFile> {
     const pack = await this.packs.get(id);
-    if (!pack.iconPath) throw new NotFoundException("This pack has no icon");
+    if (!pack.iconPath) {
+      throw new NotFoundException("This pack has no icon");
+    }
     const iconPath = path.join(this.storage.root, pack.iconPath);
     try {
       await stat(iconPath);

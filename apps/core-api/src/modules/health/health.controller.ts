@@ -54,7 +54,7 @@ export class HealthController {
     return {
       status: checks.every((check) => check.status === "up") ? "ok" : "degraded",
       checks,
-      version: "0.1.0",
+      version: "1.2.0",
       timestamp: new Date().toISOString(),
     };
   }

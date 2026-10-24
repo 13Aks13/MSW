@@ -13,6 +13,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Avatar, Badge, Button, Dropdown, Layout, Menu, Space, Tag, Typography } from "antd";
 import { useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import { getHealth } from "../api/health";
 import { getServerStatus } from "../api/server";
 import { useAuthStore } from "../store/auth";
 
@@ -38,6 +39,12 @@ export default function AppLayout() {
     queryKey: ["server-status"],
     queryFn: getServerStatus,
     refetchInterval: 15_000,
+  });
+
+  const health = useQuery({
+    queryKey: ["health"],
+    queryFn: getHealth,
+    refetchInterval: 60_000,
   });
 
   const selectedKey =
@@ -71,6 +78,11 @@ export default function AppLayout() {
           onClick={({ key }) => navigate(key)}
           style={{ background: "transparent", borderInlineEnd: "none" }}
         />
+        {!collapsed && (
+          <div style={{ padding: "12px 16px", color: "rgba(255,255,255,0.65)", fontSize: 12 }}>
+            <div>App v{health.data?.version ?? "1.2.0"}</div>
+          </div>
+        )}
       </Sider>
       <Layout>
         <Header

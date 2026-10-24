@@ -54,12 +54,19 @@ export class PackImportService {
     const imported: PackDto[] = [];
     const skipped: string[] = [];
     const replaced: string[] = [];
+    const logs: string[] = [];
+    const log = (message: string) => {
+      logs.push(message);
+      this.logger.log(message);
+    };
 
     try {
       await mkdir(extractedDir, { recursive: true });
+      log(`Received ${file.originalname} (${file.size} bytes); extracting archive...`);
       await this.zip.extract(file.path, extractedDir);
 
       const manifestPaths = await this.manifests.findManifests(extractedDir);
+      log(`Extracted archive; found ${manifestPaths.length} manifest(s).`);
       if (manifestPaths.length === 0) {
         throw new BadRequestException(
           "No manifest.json found inside the ZIP archive. Expected pack folders with manifest.json.",
@@ -67,6 +74,7 @@ export class PackImportService {
       }
 
       for (const manifestPath of manifestPaths) {
+        log(`Processing manifest: ${path.relative(extractedDir, manifestPath)}`);
         const parsed = await this.manifests.parse(manifestPath, type);
         const packType = parsed.type ?? type;
         if (!parsed.type) {
@@ -87,6 +95,7 @@ export class PackImportService {
         const existing = await this.packs.findOneBy({ packUuid: parsed.uuid });
         if (existing && policy === "skip") {
           skipped.push(parsed.name);
+          log(`Skipped existing pack: ${parsed.name}`);
           continue;
         }
 
@@ -132,7 +141,12 @@ export class PackImportService {
           const saved = await this.packs.save(entity);
           const dto = this.packsService.toDto(saved);
           imported.push(dto);
-          if (existing) replaced.push(parsed.name);
+          if (existing) {
+            replaced.push(parsed.name);
+            log(`Replaced pack: ${parsed.name} (${parsed.version})`);
+          } else {
+            log(`Imported pack: ${parsed.name} (${parsed.version})`);
+          }
         } catch (error) {
           await rm(stagingDir, { recursive: true, force: true });
           errors.push({
@@ -149,15 +163,21 @@ export class PackImportService {
         warnings.push(issue);
       }
 
+      const durationMs = Date.now() - startedAt;
+      log(
+        `Completed import: ${imported.length} imported, ${replaced.length} replaced, ${skipped.length} skipped, ${errors.length} failed in ${(durationMs / 1000).toFixed(2)}s.`,
+      );
+
       return {
         imported,
         skipped,
         replaced,
         warnings,
         errors,
-        durationMs: Date.now() - startedAt,
+        durationMs,
         bundleType: type,
         duplicatePolicy: policy,
+        logs,
       };
     } finally {
       await this.zip.cleanup(workDir);

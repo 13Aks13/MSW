@@ -14,9 +14,9 @@ import {
 } from "@nestjs/common";
 import { ApiBearerAuth, ApiOperation, ApiTags } from "@nestjs/swagger";
 import { Roles } from "../../common/decorators/roles.decorator.js";
-import type { ListPacksQueryDto } from "../packs/dto/list-packs.dto.js";
+import { ListPacksQueryDto } from "../packs/dto/list-packs.dto.js";
 import { BackupsService } from "./backups.service.js";
-import type { CreateBackupDto, RestoreBackupDto } from "./dto/backup.dto.js";
+import { CreateBackupDto, RestoreBackupDto } from "./dto/backup.dto.js";
 
 @ApiTags("backups")
 @ApiBearerAuth()

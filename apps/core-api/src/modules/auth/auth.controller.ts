@@ -5,7 +5,7 @@ import { CurrentUser } from "../../common/decorators/current-user.decorator.js";
 import { Public } from "../../common/decorators/public.decorator.js";
 import { AuthService } from "./auth.service.js";
 import type { AuthUser } from "./auth.types.js";
-import type { LoginDto } from "./dto/login.dto.js";
+import { LoginDto } from "./dto/login.dto.js";
 
 @ApiTags("auth")
 @Controller("auth")
