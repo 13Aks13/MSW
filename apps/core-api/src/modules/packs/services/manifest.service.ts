@@ -86,12 +86,6 @@ export class ManifestService {
       detectedType = "behavior";
     }
 
-    if (detectedType && detectedType !== requestedType) {
-      throw new BadRequestException(
-        `Pack "${header.name}" is a ${detectedType} pack but was uploaded as ${requestedType}`,
-      );
-    }
-
     const dependencies: PackDependency[] = [];
     for (const dependency of manifest.dependencies ?? []) {
       if (typeof dependency.uuid !== "string" || !isUuid(dependency.uuid)) continue;

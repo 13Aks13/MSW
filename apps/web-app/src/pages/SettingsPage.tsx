@@ -6,6 +6,7 @@ import {
   App,
   Button,
   Card,
+  Descriptions,
   Form,
   Input,
   InputNumber,
@@ -15,6 +16,8 @@ import {
   Typography,
 } from "antd";
 import { errorMessage } from "../api/client";
+import { getHealth } from "../api/health";
+import { getServerStatus } from "../api/server";
 import { applySettings, listServerProperties, updateServerProperties } from "../api/settings";
 import { canWrite, useAuthStore } from "../store/auth";
 
@@ -28,6 +31,16 @@ export default function SettingsPage() {
   const properties = useQuery({
     queryKey: ["server-properties"],
     queryFn: listServerProperties,
+  });
+
+  const health = useQuery({
+    queryKey: ["health"],
+    queryFn: getHealth,
+  });
+
+  const serverStatus = useQuery({
+    queryKey: ["server-status"],
+    queryFn: getServerStatus,
   });
 
   const save = useMutation({
@@ -131,6 +144,22 @@ export default function SettingsPage() {
         message="Environment variables can override these values"
         description="Keep GAMEMODE, DIFFICULTY, MAX_PLAYERS and similar variables out of docker-compose.yml if you want to manage them here. level-name is fixed by the platform."
       />
+
+      <Card style={{ marginBottom: 16 }}>
+        <Descriptions
+          title="Build & Minecraft"
+          column={1}
+          items={[
+            { key: "platform", label: "Current build", children: health.data?.version ?? "—" },
+            {
+              key: "image",
+              label: "Minecraft server image",
+              children: serverStatus.data?.image ?? "—",
+            },
+            { key: "state", label: "Server state", children: serverStatus.data?.state ?? "—" },
+          ]}
+        />
+      </Card>
 
       <Card>
         {properties.isLoading ? (

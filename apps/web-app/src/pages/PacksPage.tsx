@@ -196,7 +196,7 @@ export default function PacksPage() {
           />
           {canUpload && (
             <Upload
-              accept=".zip"
+              accept=".zip,.mcaddon,.mcpack"
               showUploadList={false}
               customRequest={({ file, onSuccess, onError }) => {
                 upload.mutate(file as File, {
@@ -216,7 +216,7 @@ export default function PacksPage() {
       {canUpload && (
         <Card style={{ marginBottom: 16 }}>
           <Upload.Dragger
-            accept=".zip"
+            accept=".zip,.mcaddon,.mcpack"
             multiple={false}
             showUploadList={false}
             disabled={upload.isPending}

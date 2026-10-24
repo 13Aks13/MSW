@@ -67,12 +67,19 @@ export class PackImportService {
 
       for (const manifestPath of manifestPaths) {
         const parsed = await this.manifests.parse(manifestPath, type);
+        const packType = parsed.type ?? type;
         if (!parsed.type) {
           warnings.push({
             level: "warning",
             pack: parsed.name,
             message:
               "No modules[] declared in manifest.json; pack type was taken from the endpoint.",
+          });
+        } else if (parsed.type !== type) {
+          warnings.push({
+            level: "warning",
+            pack: parsed.name,
+            message: `Detected as ${parsed.type} pack; imported into ${parsed.type} packs.`,
           });
         }
 
@@ -82,9 +89,13 @@ export class PackImportService {
           continue;
         }
 
-        const folderName = existing?.folderName ?? (await this.uniqueFolderName(parsed.name, type));
-        const finalDir = path.join(this.storage.packsDir(type), folderName);
-        const stagingDir = path.join(this.storage.packsDir(type), `.staging-${randomUUID()}`);
+        const typeChanged = !!existing && existing.type !== packType;
+        const folderName =
+          existing && !typeChanged
+            ? existing.folderName
+            : await this.uniqueFolderName(parsed.name, packType);
+        const finalDir = path.join(this.storage.packsDir(packType), folderName);
+        const stagingDir = path.join(this.storage.packsDir(packType), `.staging-${randomUUID()}`);
 
         try {
           await this.copyDirectory(parsed.packRoot, stagingDir);
@@ -95,6 +106,12 @@ export class PackImportService {
             : (existing?.iconPath ?? null);
 
           await rm(finalDir, { recursive: true, force: true });
+          if (typeChanged && existing) {
+            await rm(path.join(this.storage.packsDir(existing.type), existing.folderName), {
+              recursive: true,
+              force: true,
+            });
+          }
           await rename(stagingDir, finalDir);
 
           const sizeBytes = await dirSize(finalDir);
@@ -103,7 +120,7 @@ export class PackImportService {
           entity.packUuid = parsed.uuid;
           entity.version = parsed.version;
           entity.versionArray = parsed.versionArray;
-          entity.type = type;
+          entity.type = packType;
           entity.folderName = folderName;
           entity.iconPath = iconPath;
           entity.sizeBytes = String(sizeBytes);
