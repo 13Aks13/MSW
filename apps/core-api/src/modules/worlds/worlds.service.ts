@@ -4,16 +4,17 @@ import { type Paginated, slugify, type WorldDto, type WorldStatus } from "@mc/sh
 import {
   BadRequestException,
   ConflictException,
+  Inject,
   Injectable,
   Logger,
   NotFoundException,
 } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { In, type Repository } from "typeorm";
-import type { StorageService } from "../../common/storage/storage.service.js";
+import { StorageService } from "../../common/storage/storage.service.js";
 import { dirSize, pathExists } from "../../common/utils/fs.utils.js";
 import { PackEntity } from "../packs/entities/pack.entity.js";
-import type { ServerService } from "../server/server.service.js";
+import { ServerService } from "../server/server.service.js";
 import type { CreateWorldDto, ListWorldsQueryDto } from "./dto/world.dto.js";
 import { WorldEntity } from "./entities/world.entity.js";
 import { WorldPackEntity } from "./entities/world-pack.entity.js";
@@ -34,8 +35,8 @@ export class WorldsService {
     private readonly worldPacks: Repository<WorldPackEntity>,
     @InjectRepository(PackEntity)
     private readonly packs: Repository<PackEntity>,
-    private readonly storage: StorageService,
-    private readonly server: ServerService,
+    @Inject(StorageService) private readonly storage: StorageService,
+    @Inject(ServerService) private readonly server: ServerService,
   ) {}
 
   async list(query: ListWorldsQueryDto): Promise<Paginated<WorldDto>> {

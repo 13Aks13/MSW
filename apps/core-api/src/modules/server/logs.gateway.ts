@@ -1,6 +1,6 @@
 import { SOCKET_EVENTS } from "@mc/shared";
-import { Logger } from "@nestjs/common";
-import type { JwtService } from "@nestjs/jwt";
+import { Inject, Logger } from "@nestjs/common";
+import { JwtService } from "@nestjs/jwt";
 import {
   type OnGatewayConnection,
   type OnGatewayDisconnect,
@@ -8,7 +8,7 @@ import {
 } from "@nestjs/websockets";
 import type { Socket } from "socket.io";
 import type { JwtPayload } from "../auth/auth.types.js";
-import type { ServerService } from "./server.service.js";
+import { ServerService } from "./server.service.js";
 
 interface LogSocketData {
   stopStream?: () => void;
@@ -22,8 +22,8 @@ export class LogsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   private readonly logger = new Logger(LogsGateway.name);
 
   constructor(
-    private readonly jwtService: JwtService,
-    private readonly server: ServerService,
+    @Inject(JwtService) private readonly jwtService: JwtService,
+    @Inject(ServerService) private readonly server: ServerService,
   ) {}
 
   async handleConnection(client: Socket): Promise<void> {

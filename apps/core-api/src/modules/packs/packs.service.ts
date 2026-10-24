@@ -1,10 +1,10 @@
 import { rm } from "node:fs/promises";
 import path from "node:path";
 import type { PackDependency, PackDto, PackType, Paginated } from "@mc/shared";
-import { ConflictException, Injectable, NotFoundException } from "@nestjs/common";
+import { ConflictException, Inject, Injectable, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { In, type Repository } from "typeorm";
-import type { StorageService } from "../../common/storage/storage.service.js";
+import { StorageService } from "../../common/storage/storage.service.js";
 import { WorldPackEntity } from "../worlds/entities/world-pack.entity.js";
 import type { ListPacksQueryDto } from "./dto/list-packs.dto.js";
 import { PackEntity } from "./entities/pack.entity.js";
@@ -16,7 +16,7 @@ export class PacksService {
     private readonly packs: Repository<PackEntity>,
     @InjectRepository(WorldPackEntity)
     private readonly worldPacks: Repository<WorldPackEntity>,
-    private readonly storage: StorageService,
+    @Inject(StorageService) private readonly storage: StorageService,
   ) {}
 
   async list(query: ListPacksQueryDto): Promise<Paginated<PackDto>> {

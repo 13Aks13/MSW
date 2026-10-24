@@ -1,7 +1,7 @@
 import { readFile, writeFile } from "node:fs/promises";
 import { SERVER_PROPERTY_ALLOWLIST, type ServerPropertyDto } from "@mc/shared";
-import { BadRequestException, Injectable, Logger, type OnModuleInit } from "@nestjs/common";
-import type { StorageService } from "../../common/storage/storage.service.js";
+import { BadRequestException, Inject, Injectable, Logger, type OnModuleInit } from "@nestjs/common";
+import { StorageService } from "../../common/storage/storage.service.js";
 import { pathExists } from "../../common/utils/fs.utils.js";
 
 interface PropertyMeta extends Omit<ServerPropertyDto, "value"> {
@@ -99,7 +99,7 @@ export class SettingsService implements OnModuleInit {
   private readonly logger = new Logger(SettingsService.name);
   private cache: Record<string, string> = {};
 
-  constructor(private readonly storage: StorageService) {}
+  constructor(@Inject(StorageService) private readonly storage: StorageService) {}
 
   async onModuleInit(): Promise<void> {
     this.cache = await this.read();

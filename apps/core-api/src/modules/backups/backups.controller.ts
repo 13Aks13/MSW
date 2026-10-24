@@ -5,6 +5,7 @@ import {
   Delete,
   Get,
   Header,
+  Inject,
   Param,
   ParseUUIDPipe,
   Post,
@@ -14,14 +15,14 @@ import {
 import { ApiBearerAuth, ApiOperation, ApiTags } from "@nestjs/swagger";
 import { Roles } from "../../common/decorators/roles.decorator.js";
 import type { ListPacksQueryDto } from "../packs/dto/list-packs.dto.js";
-import type { BackupsService } from "./backups.service.js";
+import { BackupsService } from "./backups.service.js";
 import type { CreateBackupDto, RestoreBackupDto } from "./dto/backup.dto.js";
 
 @ApiTags("backups")
 @ApiBearerAuth()
 @Controller("backups")
 export class BackupsController {
-  constructor(private readonly backups: BackupsService) {}
+  constructor(@Inject(BackupsService) private readonly backups: BackupsService) {}
 
   @Get()
   list(@Query() query: ListPacksQueryDto): Promise<Paginated<BackupDto>> {

@@ -1,14 +1,14 @@
 import type { DashboardDto, ServerStatsDto, ServerStatusDto } from "@mc/shared";
-import { Body, Controller, Get, Header, HttpCode, Post, Query } from "@nestjs/common";
+import { Body, Controller, Get, Header, HttpCode, Inject, Post, Query } from "@nestjs/common";
 import { ApiBearerAuth, ApiOperation, ApiTags } from "@nestjs/swagger";
 import { Roles } from "../../common/decorators/roles.decorator.js";
-import type { ServerService } from "./server.service.js";
+import { ServerService } from "./server.service.js";
 
 @ApiTags("server")
 @ApiBearerAuth()
 @Controller("server")
 export class ServerController {
-  constructor(private readonly server: ServerService) {}
+  constructor(@Inject(ServerService) private readonly server: ServerService) {}
 
   @Get("status")
   status(): Promise<ServerStatusDto> {

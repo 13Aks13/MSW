@@ -1,18 +1,18 @@
 import type { HealthDto } from "@mc/shared";
-import { Controller, Get } from "@nestjs/common";
+import { Controller, Get, Inject } from "@nestjs/common";
 import { ApiTags } from "@nestjs/swagger";
-import type { DataSource } from "typeorm";
+import { DataSource } from "typeorm";
 import { Public } from "../../common/decorators/public.decorator.js";
-import type { StorageService } from "../../common/storage/storage.service.js";
-import type { DockerService } from "../server/docker.service.js";
+import { StorageService } from "../../common/storage/storage.service.js";
+import { DockerService } from "../server/docker.service.js";
 
 @ApiTags("health")
 @Controller("health")
 export class HealthController {
   constructor(
-    private readonly dataSource: DataSource,
-    private readonly docker: DockerService,
-    private readonly storage: StorageService,
+    @Inject(DataSource) private readonly dataSource: DataSource,
+    @Inject(DockerService) private readonly docker: DockerService,
+    @Inject(StorageService) private readonly storage: StorageService,
   ) {}
 
   @Public()

@@ -12,18 +12,19 @@ import {
 import {
   BadRequestException,
   ConflictException,
+  Inject,
   Injectable,
   Logger,
   NotFoundException,
 } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { In, type Repository } from "typeorm";
-import type { StorageService } from "../../../common/storage/storage.service.js";
+import { StorageService } from "../../../common/storage/storage.service.js";
 import { dirSize } from "../../../common/utils/fs.utils.js";
 import { PackEntity } from "../entities/pack.entity.js";
-import type { PacksService } from "../packs.service.js";
-import type { ManifestService } from "./manifest.service.js";
-import type { ZipExtractorService } from "./zip-extractor.service.js";
+import { PacksService } from "../packs.service.js";
+import { ManifestService } from "./manifest.service.js";
+import { ZipExtractorService } from "./zip-extractor.service.js";
 
 @Injectable()
 export class PackImportService {
@@ -32,10 +33,10 @@ export class PackImportService {
   constructor(
     @InjectRepository(PackEntity)
     private readonly packs: Repository<PackEntity>,
-    private readonly packsService: PacksService,
-    private readonly manifests: ManifestService,
-    private readonly zip: ZipExtractorService,
-    private readonly storage: StorageService,
+    @Inject(PacksService) private readonly packsService: PacksService,
+    @Inject(ManifestService) private readonly manifests: ManifestService,
+    @Inject(ZipExtractorService) private readonly zip: ZipExtractorService,
+    @Inject(StorageService) private readonly storage: StorageService,
   ) {}
 
   async importBundle(
