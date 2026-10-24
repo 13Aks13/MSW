@@ -1,8 +1,8 @@
 import { mkdir, statfs } from "node:fs/promises";
 import path from "node:path";
 import { STORAGE_DIRS } from "@mc/shared";
-import { Injectable, Logger, type OnModuleInit } from "@nestjs/common";
-import type { ConfigService } from "@nestjs/config";
+import { Inject, Injectable, Logger, type OnModuleInit } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
 
 @Injectable()
 export class StorageService implements OnModuleInit {
@@ -10,7 +10,7 @@ export class StorageService implements OnModuleInit {
   readonly root: string;
   readonly dataRoot: string;
 
-  constructor(private readonly config: ConfigService) {
+  constructor(@Inject(ConfigService) private readonly config: ConfigService) {
     this.root = path.resolve(config.get<string>("STORAGE_ROOT", "./storage"));
     this.dataRoot = path.resolve(config.get<string>("DATA_ROOT", "./data"));
   }

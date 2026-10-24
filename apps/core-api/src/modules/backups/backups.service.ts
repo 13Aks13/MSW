@@ -5,12 +5,13 @@ import { type BackupDto, formatBytes, type Paginated, slugify } from "@mc/shared
 import {
   BadRequestException,
   ConflictException,
+  Inject,
   Injectable,
   Logger,
   NotFoundException,
   type OnModuleInit,
 } from "@nestjs/common";
-import type { ConfigService } from "@nestjs/config";
+import { ConfigService } from "@nestjs/config";
 import { InjectRepository } from "@nestjs/typeorm";
 import { c as createTar, x as extractTar } from "tar";
 import type { Repository } from "typeorm";
@@ -36,7 +37,7 @@ export class BackupsService implements OnModuleInit {
     private readonly storage: StorageService,
     private readonly server: ServerService,
     private readonly worldsService: WorldsService,
-    config: ConfigService,
+    @Inject(ConfigService) config: ConfigService,
   ) {
     this.gracefulStop = envFlag(config.get<string>("BACKUP_GRACEFUL_STOP"), true);
   }
