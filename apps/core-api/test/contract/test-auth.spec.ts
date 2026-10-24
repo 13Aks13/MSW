@@ -1,25 +1,11 @@
-import { type INestApplication, ValidationPipe } from "@nestjs/common";
-import { Test, type TestingModule } from "@nestjs/testing";
+import { type INestApplication } from "@nestjs/common";
 import * as request from "supertest";
-import { AppModule } from "../../src/app.module.js";
 import { createTestApp } from "./test-helpers.js";
 
 describe("Auth (Contract)", () => {
   let app: INestApplication;
   beforeAll(async () => {
     app = await createTestApp();
-  });
-  beforeAll(async () => {
-  beforeAll(async () => {
-    app = await createTestApp();
-  });
-  });
-    const module: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
-    }).compile();
-    app = module.createNestApplication();
-    app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
-    await app.init();
   });
 
   afterAll(async () => {

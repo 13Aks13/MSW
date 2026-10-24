@@ -21,7 +21,9 @@ export class PacksService {
 
   async list(query: ListPacksQueryDto): Promise<Paginated<PackDto>> {
     const builder = this.packs.createQueryBuilder("pack");
-    if (query.type) builder.andWhere("pack.type = :type", { type: query.type });
+    if (query.type) {
+      builder.andWhere("pack.type = :type", { type: query.type });
+    }
     if (query.search) {
       builder.andWhere("(lower(pack.name) LIKE :search OR pack.packUuid::text LIKE :search)", {
         search: `%${query.search.toLowerCase()}%`,
@@ -47,7 +49,9 @@ export class PacksService {
 
   async get(id: string): Promise<PackEntity> {
     const pack = await this.packs.findOneBy({ id });
-    if (!pack) throw new NotFoundException(`Pack ${id} not found`);
+    if (!pack) {
+      throw new NotFoundException(`Pack ${id} not found`);
+    }
     return pack;
   }
 
@@ -56,7 +60,9 @@ export class PacksService {
   ): Promise<Array<PackDependency & { resolvedPackId: string | null; missing: boolean }>> {
     const pack = await this.get(id);
     const uuids = pack.dependencies.map((dependency) => dependency.uuid);
-    if (uuids.length === 0) return [];
+    if (uuids.length === 0) {
+      return [];
+    }
 
     const resolved = await this.packs.find({
       where: { packUuid: In(uuids) },
@@ -90,6 +96,24 @@ export class PacksService {
     }
   }
 
+  async removeMany(ids: string[]): Promise<{ deleted: number }> {
+    let deleted = 0;
+    for (const id of ids) {
+      try {
+        await this.remove(id);
+        deleted += 1;
+      } catch {
+        // skip packs in use
+      }
+    }
+    return { deleted };
+  }
+
+  async removeAll(type?: PackType): Promise<{ deleted: number }> {
+    const where = type ? { type } : {};
+    const packs = await this.packs.find({ where, select: { id: true } });
+    return this.removeMany(packs.map((pack) => pack.id));
+  }
   toDto(pack: PackEntity): PackDto {
     return {
       id: pack.id,

@@ -60,7 +60,9 @@ export class LogsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   private extractToken(client: Socket): string | null {
     const authToken = client.handshake.auth?.token;
-    if (typeof authToken === "string" && authToken.length > 0) return authToken;
+    if (typeof authToken === "string" && authToken.length > 0) {
+      return authToken;
+    }
 
     const header = client.handshake.headers.authorization;
     if (typeof header === "string" && header.startsWith("Bearer ")) {

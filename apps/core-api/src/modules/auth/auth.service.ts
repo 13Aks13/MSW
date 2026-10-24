@@ -13,7 +13,7 @@ export class AuthService {
 
   async login(dto: LoginDto): Promise<LoginResponseDto> {
     const user = await this.usersService.findByEmailWithPassword(dto.email);
-    if (!user || !user.isActive) {
+    if (!user?.isActive) {
       throw new UnauthorizedException("Invalid email or password");
     }
 
@@ -37,7 +37,9 @@ export class AuthService {
   private expiresInSeconds(): number {
     const expiresIn = process.env.JWT_EXPIRES_IN ?? "12h";
     const match = /^(\d+)([smhd])$/.exec(expiresIn);
-    if (!match) return 43_200;
+    if (!match) {
+      return 43_200;
+    }
     const value = Number(match[1]);
     const unit = match[2];
     const multiplier = unit === "s" ? 1 : unit === "m" ? 60 : unit === "h" ? 3_600 : 86_400;

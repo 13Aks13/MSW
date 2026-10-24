@@ -30,15 +30,21 @@ export default function LogsPage() {
   const consoleRef = useRef<HTMLDivElement>(null);
 
   const filtered = useMemo(() => {
-    if (!filter.trim()) return lines;
+    if (!filter.trim()) {
+      return lines;
+    }
     const needle = filter.toLowerCase();
     return lines.filter((line) => line.message.toLowerCase().includes(needle));
   }, [lines, filter]);
 
   useEffect(() => {
-    if (!autoScroll) return;
+    if (!autoScroll) {
+      return;
+    }
     const element = consoleRef.current;
-    if (element) element.scrollTop = element.scrollHeight;
+    if (element) {
+      element.scrollTop = element.scrollHeight;
+    }
   }, [autoScroll]);
 
   const togglePause = () => {

@@ -45,6 +45,10 @@ async function bootstrap(): Promise<void> {
     swaggerOptions: { persistAuthorization: true },
   });
 
+  const server = app.getHttpServer();
+  server.timeout = 0;
+  server.requestTimeout = 0;
+  server.headersTimeout = 0;
   await app.listen(port, "0.0.0.0");
   // eslint-disable-next-line no-console
   console.log(`core-api listening on http://0.0.0.0:${port} (docs: /api/docs)`);

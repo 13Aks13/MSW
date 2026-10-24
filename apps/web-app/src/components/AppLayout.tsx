@@ -79,7 +79,14 @@ export default function AppLayout() {
           style={{ background: "transparent", borderInlineEnd: "none" }}
         />
         {!collapsed && (
-          <div style={{ padding: "12px 16px", color: "rgba(255,255,255,0.65)", fontSize: 12 }}>
+          <div
+            style={{
+              padding: "12px 16px",
+              color: "rgba(255,255,255,0.65)",
+              fontSize: 12,
+              textAlign: "center",
+            }}
+          >
             <div>App v{health.data?.version ?? "1.2.0"}</div>
           </div>
         )}

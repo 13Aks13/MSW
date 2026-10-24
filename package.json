@@ -15,7 +15,7 @@
     "dev:api": "pnpm --filter @mc/core-api start:dev",
     "dev:web": "pnpm --filter @mc/web-api dev",
     "build": "pnpm -r build",
-    "typecheck": "pnpm -r typecheck",
+    "typecheck": "pnpm --filter @mc/shared build && pnpm -r --filter '!@mc/worker' typecheck",
     "lint": "pnpm -r lint",
     "test": "pnpm -r test",
     "format": "biome check --write .",

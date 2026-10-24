@@ -75,7 +75,9 @@ export class BackupsService implements OnModuleInit {
 
   async get(id: string): Promise<BackupEntity> {
     const backup = await this.backups.findOneBy({ id });
-    if (!backup) throw new NotFoundException(`Backup ${id} not found`);
+    if (!backup) {
+      throw new NotFoundException(`Backup ${id} not found`);
+    }
     return backup;
   }
 
@@ -89,7 +91,9 @@ export class BackupsService implements OnModuleInit {
 
   async create(worldId?: string): Promise<BackupDto> {
     const world = worldId ? await this.worlds.findOneBy({ id: worldId }) : null;
-    if (worldId && !world) throw new NotFoundException(`World ${worldId} not found`);
+    if (worldId && !world) {
+      throw new NotFoundException(`World ${worldId} not found`);
+    }
 
     const sourceDir = world
       ? path.join(this.storage.worldsDir(), world.folderName)
@@ -172,7 +176,9 @@ export class BackupsService implements OnModuleInit {
     }
 
     const world = await this.worlds.findOneBy({ id: worldId });
-    if (!world) throw new NotFoundException(`World ${worldId} not found`);
+    if (!world) {
+      throw new NotFoundException(`World ${worldId} not found`);
+    }
 
     const archive = this.filePath(backup);
     if (!(await pathExists(archive))) {
@@ -229,7 +235,9 @@ export class BackupsService implements OnModuleInit {
     const nested = await readdir(path.join(dir, entries[0] ?? ""), { withFileTypes: true }).catch(
       () => [],
     );
-    if (nested.some((entry) => entry.name === "level.dat" || entry.name === "db")) return;
+    if (nested.some((entry) => entry.name === "level.dat" || entry.name === "db")) {
+      return;
+    }
     throw new BadRequestException("Archive does not look like a Bedrock world");
   }
 

@@ -52,7 +52,9 @@ export class HealthController {
     }
 
     return {
-      status: checks.every((check) => check.status === "up") ? "ok" : "degraded",
+      status: checks.every((check: HealthDto["checks"][number]) => check.status === "up")
+        ? "ok"
+        : "degraded",
       checks,
       version: "1.2.0",
       timestamp: new Date().toISOString(),

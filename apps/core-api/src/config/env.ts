@@ -46,6 +46,8 @@ export function validateEnv(env: RawEnv): RawEnv {
 }
 
 export function envFlag(value: string | undefined, fallback = false): boolean {
-  if (value === undefined || value === "") return fallback;
+  if (value === undefined || value === "") {
+    return fallback;
+  }
   return ["1", "true", "yes", "on"].includes(value.toLowerCase());
 }

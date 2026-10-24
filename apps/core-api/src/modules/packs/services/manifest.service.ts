@@ -20,15 +20,21 @@ export interface ParsedManifest {
 export class ManifestService {
   /** Find every manifest.json below `root`, skipping node_modules and hidden tool folders. */
   async findManifests(root: string, depth = 0): Promise<string[]> {
-    if (depth > 8) return [];
+    if (depth > 8) {
+      return [];
+    }
     const entries = await readdir(root, { withFileTypes: true });
     const manifests: string[] = [];
 
     for (const entry of entries) {
-      if (entry.isSymbolicLink()) continue;
+      if (entry.isSymbolicLink()) {
+        continue;
+      }
       const fullPath = path.join(root, entry.name);
       if (entry.isDirectory()) {
-        if (entry.name === "node_modules" || entry.name === "__MACOSX") continue;
+        if (entry.name === "node_modules" || entry.name === "__MACOSX") {
+          continue;
+        }
         manifests.push(...(await this.findManifests(fullPath, depth + 1)));
       } else if (entry.isFile() && entry.name === "manifest.json") {
         manifests.push(fullPath);
@@ -38,7 +44,7 @@ export class ManifestService {
     return manifests;
   }
 
-  async parse(manifestPath: string, requestedType: PackType): Promise<ParsedManifest> {
+  async parse(manifestPath: string, _requestedType: PackType): Promise<ParsedManifest> {
     const info = await stat(manifestPath);
     if (info.size > MAX_MANIFEST_BYTES) {
       throw new BadRequestException(`manifest.json is larger than 1 MB: ${manifestPath}`);
@@ -81,14 +87,18 @@ export class ManifestService {
       .filter(Boolean);
 
     let detectedType: PackType | null = null;
-    if (moduleTypes.some((type) => type.startsWith("resources"))) detectedType = "resource";
+    if (moduleTypes.some((type) => type.startsWith("resources"))) {
+      detectedType = "resource";
+    }
     if (moduleTypes.includes("data") || moduleTypes.some((type) => type.startsWith("data"))) {
       detectedType = "behavior";
     }
 
     const dependencies: PackDependency[] = [];
     for (const dependency of manifest.dependencies ?? []) {
-      if (typeof dependency.uuid !== "string" || !isUuid(dependency.uuid)) continue;
+      if (typeof dependency.uuid !== "string" || !isUuid(dependency.uuid)) {
+        continue;
+      }
       let depVersion: number[] | undefined;
       try {
         depVersion = parseVersion(dependency.version).array;
