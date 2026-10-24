@@ -24,6 +24,7 @@ COPY apps/worker apps/worker
 RUN pnpm --filter @mc/shared build \
  && pnpm --filter @mc/worker build \
  && pnpm --filter @mc/worker deploy --prod /out \
+ && cp -r apps/worker/dist /out/dist \
  && rm -rf /out/src /out/tsconfig*.json /out/*.tsbuildinfo /out/Dockerfile
 
 FROM node:24-alpine AS runner
