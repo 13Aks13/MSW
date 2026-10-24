@@ -27,6 +27,9 @@ jobs:
       - name: Install Dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Check Package Versions
+        run: pnpm version:check
+
       - name: Build Shared Package
         run: pnpm --filter @mc/shared build
 
@@ -69,4 +72,4 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.BOT_PAT }}
         run: |
-gh pr review ${{ github.event.pull_request.html_url }} --comment -b "CI checks and AI Code Review completed. Please check the results."
+          gh pr review ${{ github.event.pull_request.html_url }} --comment -b "CI checks and AI Code Review completed. Please check the results."
