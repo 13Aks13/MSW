@@ -167,6 +167,15 @@ export interface ServerPropertyDto {
 
 export type ImportJobStatus = "queued" | "active" | "completed" | "failed" | "cancelled";
 
+export interface AllowListEntry {
+  name: string;
+  xuid?: string;
+}
+
+export interface AllowListDto {
+  entries: AllowListEntry[];
+}
+
 export interface ImportJobDto {
   id: string;
   bundleType: PackType;
