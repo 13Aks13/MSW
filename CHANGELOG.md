@@ -1,3 +1,9 @@
+# [1.10.0](https://github.com/13Aks13/MinecraftSWP/compare/1.9.0...1.10.0) (2026-10-24)
+
+### Features
+
+- **api:** improve UI and setting for world ([#20](https://github.com/13Aks13/MinecraftSWP/issues/20)) ([9bb7c8f](https://github.com/13Aks13/MinecraftSWP/commit/9bb7c8f4829465e4f81dcbc2daa8fc5a0327e959))
+
 # [1.9.0](https://github.com/13Aks13/MinecraftSWP/compare/1.8.0...1.9.0) (2026-10-24)
 
 ### Features
