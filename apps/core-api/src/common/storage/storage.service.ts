@@ -62,6 +62,11 @@ export class StorageService implements OnModuleInit {
     return path.join(this.dataRoot, "server.properties");
   }
 
+  /** Bedrock Dedicated Server reads allowlist.json from the server root, not the world folder. */
+  allowlistPath(): string {
+    return path.join(this.dataRoot, "allowlist.json");
+  }
+
   /** Join a user-controlled relative path and refuse to escape the base. */
   safeJoin(base: string, relative: string): string {
     const resolvedBase = path.resolve(base);

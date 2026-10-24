@@ -87,7 +87,7 @@ services:
       STORAGE_ROOT: /storage
       DATA_ROOT: /data
       BEDROCK_CONTAINER: mc-bedrock
-      BEDROCK_LEVEL_NAME: active
+      BEDROCK_LEVEL_NAME: Experiment
       DOCKER_SOCKET: /var/run/docker.sock
     volumes:
       - ./storage:/storage
@@ -175,21 +175,15 @@ services:
     container_name: mc-bedrock
     environment:
       EULA: "TRUE"
-      LEVEL_NAME: active
-      # Keep the server on the same uid/gid as core-api so both containers can
-      # read/write worlds and downloaded packs without permission conflicts.
+      LEVEL_NAME: Experiment
+      TRANSPORT: nethernet
       UID: "1000"
       GID: "1000"
-      # Server name, gamemode, difficulty, max players and similar values are
-      # managed through the Settings page (server.properties). Environment
-      # variables here would overwrite them on every start.
     ports:
       - "19132:19132/udp"
       - "19133:19133/udp"
     volumes:
       - ./data:/data
-      - ./storage/resource_packs:/data/resource_packs
-      - ./storage/behavior_packs:/data/behavior_packs
     networks:
       - backend
     stdin_open: true
