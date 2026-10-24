@@ -5,7 +5,45 @@ on:
     types: [opened, synchronize]
 
 jobs:
+  ci:
+    name: CI Checks (Build, Lint, Typecheck)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 12.14.0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: "pnpm"
+
+      - name: Install Dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build Shared Package
+        run: pnpm --filter @mc/shared build
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Lint & Format Check
+        run: |
+          pnpm lint
+          pnpm format:check
+
+      - name: Build
+        run: pnpm build
+
   review:
+    name: AI Code Review
+    needs: ci # ЗАПУСКАЄТЬСЯ ТІЛЬКИ ПІСЛЯ УСПІШНОГО ПРОХОДЖЕННЯ CI
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -20,7 +58,7 @@ jobs:
       - name: Run AI Code Review
         uses: KonstZiv/ai-code-reviewer@v1
         with:
-          github_token: ${{ secrets.BOT_PAT }} # Використовуємо токен другого акаунта
+          github_token: ${{ secrets.BOT_PAT }}
           google_api_key: ${{ secrets.GEMINI_API_KEY }}
           llm_provider: gemini
           gemini_model: gemini-2.0-flash
@@ -31,4 +69,4 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.BOT_PAT }}
         run: |
-          gh pr review ${{ github.event.pull_request.html_url }} --approve -b "AI Code Review passed. Auto-approved."
+          gh pr review ${{ github.event.pull_request.html_url }} --approve -b "CI checks and AI Code Review passed. Auto-approved."
