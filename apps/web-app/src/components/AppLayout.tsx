@@ -8,6 +8,7 @@ import {
   MenuFoldOutlined,
   MenuUnfoldOutlined,
   SettingOutlined,
+  SwitcherOutlined,
 } from "@ant-design/icons";
 import { useQuery } from "@tanstack/react-query";
 import { Avatar, Badge, Button, Dropdown, Layout, Menu, Space, Tag, Typography } from "antd";
@@ -25,6 +26,7 @@ const NAV_ITEMS = [
   { key: "/worlds", icon: <DatabaseOutlined />, label: "Worlds" },
   { key: "/backups", icon: <CloudServerOutlined />, label: "Backups" },
   { key: "/logs", icon: <ApiOutlined />, label: "Logs" },
+  { key: "/server", icon: <SwitcherOutlined />, label: "Server" },
   { key: "/settings", icon: <SettingOutlined />, label: "Settings" },
 ];
 

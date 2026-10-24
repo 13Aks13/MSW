@@ -53,9 +53,22 @@ export default function SettingsPage() {
   });
 
   const apply = useMutation({
-    mutationFn: applySettings,
+    mutationFn: async () => {
+      // First save the current form values
+      const values = form.getFieldsValue();
+      const payload: Record<string, string> = {};
+      for (const [key, value] of Object.entries(values)) {
+        if (value === undefined || value === null) {
+          continue;
+        }
+        payload[key] = String(value);
+      }
+      await updateServerProperties(payload);
+      // Then restart the server
+      await applySettings();
+    },
     onSuccess: () => {
-      message.success("Server restarted with the new settings");
+      message.success("Settings saved and server restarted");
       void queryClient.invalidateQueries();
     },
     onError: (error) => message.error(errorMessage(error)),
