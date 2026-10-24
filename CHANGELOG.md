@@ -1,3 +1,9 @@
+# [1.8.0](https://github.com/13Aks13/MinecraftSWP/compare/1.7.0...1.8.0) (2026-10-24)
+
+### Features
+
+- **api:** upload packs ([#18](https://github.com/13Aks13/MinecraftSWP/issues/18)) ([043989e](https://github.com/13Aks13/MinecraftSWP/commit/043989e908f91e7ace6b55d8942f44fbe1bd5a87))
+
 # [1.7.0](https://github.com/13Aks13/MinecraftSWP/compare/1.6.1...1.7.0) (2026-10-24)
 
 ### Features
