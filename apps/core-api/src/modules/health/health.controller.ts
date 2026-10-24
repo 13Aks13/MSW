@@ -1,12 +1,14 @@
 import { readFileSync } from "node:fs";
-import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 import type { HealthDto } from "@mc/shared";
-import { Controller, Get, Inject } from "@nestjs/common";
+import { Controller, Get, Inject, Logger } from "@nestjs/common";
 import { ApiTags } from "@nestjs/swagger";
 import { DataSource } from "typeorm";
 import { Public } from "../../common/decorators/public.decorator.js";
 import { StorageService } from "../../common/storage/storage.service.js";
 import { DockerService } from "../server/docker.service.js";
+
+const logger = new Logger("AppVersion");
 
 function resolveAppVersion(): string {
   const envVersion = process.env.APP_VERSION?.trim();
@@ -14,19 +16,22 @@ function resolveAppVersion(): string {
     return envVersion;
   }
 
+  const packageJsonPath = fileURLToPath(new URL("../../../package.json", import.meta.url));
+
   try {
-    const packageJsonPath = join(__dirname, "..", "..", "..", "package.json");
     const packageJson = JSON.parse(readFileSync(packageJsonPath, "utf8")) as {
       version?: string;
     };
     if (packageJson.version) {
       return packageJson.version;
     }
-  } catch {
-    // Fall through to the baked-in release version.
+
+    logger.warn(`No version field in ${packageJsonPath}`);
+  } catch (error) {
+    logger.warn(`Could not read ${packageJsonPath}: ${(error as Error).message}`);
   }
 
-  return "1.3.0";
+  return "unknown";
 }
 
 @ApiTags("health")
