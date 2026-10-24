@@ -1,13 +1,22 @@
 import type { DataSourceOptions } from "typeorm";
 import { envFlag } from "../config/env.js";
 import { BackupEntity } from "../modules/backups/entities/backup.entity.js";
+import { ImportJobEntity } from "../modules/packs/entities/import-job.entity.js";
 import { PackEntity } from "../modules/packs/entities/pack.entity.js";
 import { UserEntity } from "../modules/users/entities/user.entity.js";
 import { WorldEntity } from "../modules/worlds/entities/world.entity.js";
 import { WorldPackEntity } from "../modules/worlds/entities/world-pack.entity.js";
 import { InitialSchema1760000000000 } from "./migrations/1760000000000-InitialSchema.js";
+import { AddImportJobsTable1760000000001 } from "./migrations/1760000000001-AddImportJobsTable.js";
 
-export const ENTITIES = [UserEntity, PackEntity, WorldEntity, WorldPackEntity, BackupEntity];
+export const ENTITIES = [
+  UserEntity,
+  PackEntity,
+  WorldEntity,
+  WorldPackEntity,
+  BackupEntity,
+  ImportJobEntity,
+];
 
 export function buildDataSourceOptions(
   get: (key: string) => string | undefined,
@@ -21,7 +30,7 @@ export function buildDataSourceOptions(
     database: get("DB_NAME") ?? "mc_platform",
     ssl: envFlag(get("DB_SSL")) ? { rejectUnauthorized: false } : false,
     entities: ENTITIES,
-    migrations: [InitialSchema1760000000000],
+    migrations: [InitialSchema1760000000000, AddImportJobsTable1760000000001],
     migrationsRun: false,
     synchronize: false,
     logging: envFlag(get("DB_LOGGING")),
